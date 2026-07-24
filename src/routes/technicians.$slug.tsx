@@ -59,11 +59,11 @@ function TechnicianProfile() {
           <Section title="About"><p className="text-muted-foreground">{tech.bio}</p></Section>
 
           <Section title="Specializations">
-            <div className="flex flex-wrap gap-2">{tech.specializations.map((s) => <Badge key={s} variant="secondary" className="rounded-full">{s}</Badge>)}</div>
+            <div className="flex flex-wrap gap-2">{tech.specializations.map((s: string) => <Badge key={s} variant="secondary" className="rounded-full">{s}</Badge>)}</div>
           </Section>
 
           <Section title="Certifications">
-            <ul className="space-y-2">{tech.certificates.map((c) => (
+            <ul className="space-y-2">{tech.certificates.map((c: string) => (
               <li key={c} className="flex items-center gap-2 text-sm"><Award className="h-4 w-4 text-primary" /> {c}</li>
             ))}</ul>
           </Section>
