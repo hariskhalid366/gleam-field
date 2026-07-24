@@ -18,6 +18,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BookingConfirmationRouteImport } from './routes/booking-confirmation'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as BecomeATechnicianRouteImport } from './routes/become-a-technician'
+import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TechniciansIndexRouteImport } from './routes/technicians.index'
@@ -70,6 +71,11 @@ const BecomeATechnicianRoute = BecomeATechnicianRouteImport.update({
   path: '/become-a-technician',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApplyRoute = ApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin-login',
   path: '/admin-login',
@@ -104,6 +110,7 @@ const ServicesSlugRoute = ServicesSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
   '/book': typeof BookRoute
   '/booking-confirmation': typeof BookingConfirmationRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
   '/book': typeof BookRoute
   '/booking-confirmation': typeof BookingConfirmationRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin-login': typeof AdminLoginRoute
+  '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
   '/book': typeof BookRoute
   '/booking-confirmation': typeof BookingConfirmationRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin-login'
+    | '/apply'
     | '/become-a-technician'
     | '/book'
     | '/booking-confirmation'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin-login'
+    | '/apply'
     | '/become-a-technician'
     | '/book'
     | '/booking-confirmation'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin-login'
+    | '/apply'
     | '/become-a-technician'
     | '/book'
     | '/booking-confirmation'
@@ -210,6 +222,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  ApplyRoute: typeof ApplyRoute
   BecomeATechnicianRoute: typeof BecomeATechnicianRoute
   BookRoute: typeof BookRoute
   BookingConfirmationRoute: typeof BookingConfirmationRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BecomeATechnicianRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apply': {
+      id: '/apply'
+      path: '/apply'
+      fullPath: '/apply'
+      preLoaderRoute: typeof ApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin-login': {
       id: '/admin-login'
       path: '/admin-login'
@@ -338,6 +358,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminLoginRoute: AdminLoginRoute,
+  ApplyRoute: ApplyRoute,
   BecomeATechnicianRoute: BecomeATechnicianRoute,
   BookRoute: BookRoute,
   BookingConfirmationRoute: BookingConfirmationRoute,
