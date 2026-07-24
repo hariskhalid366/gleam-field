@@ -43,7 +43,7 @@ function BecomePage() {
               logistics, marketing, and insurance handled for you.
             </p>
             <div className="mt-8 flex gap-3">
-              <Button size="lg" className="btn-press shadow-[var(--shadow-glow)]">Apply Now <ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <Button asChild size="lg" className="btn-press shadow-[var(--shadow-glow)]"><Link to="/apply">Apply Now <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/contact">Talk to us</Link></Button>
             </div>
           </div>
