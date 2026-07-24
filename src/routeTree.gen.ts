@@ -9,38 +9,294 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhyUsRouteImport } from './routes/why-us'
+import { Route as TrackRouteImport } from './routes/track'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as BookingConfirmationRouteImport } from './routes/booking-confirmation'
+import { Route as BookRouteImport } from './routes/book'
+import { Route as BecomeATechnicianRouteImport } from './routes/become-a-technician'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TechniciansIndexRouteImport } from './routes/technicians.index'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
+import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
+import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 
+const WhyUsRoute = WhyUsRouteImport.update({
+  id: '/why-us',
+  path: '/why-us',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingConfirmationRoute = BookingConfirmationRouteImport.update({
+  id: '/booking-confirmation',
+  path: '/booking-confirmation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeATechnicianRoute = BecomeATechnicianRouteImport.update({
+  id: '/become-a-technician',
+  path: '/become-a-technician',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TechniciansIndexRoute = TechniciansIndexRouteImport.update({
+  id: '/technicians/',
+  path: '/technicians/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TechniciansSlugRoute = TechniciansSlugRouteImport.update({
+  id: '/technicians/$slug',
+  path: '/technicians/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesSlugRoute = ServicesSlugRouteImport.update({
+  id: '/services/$slug',
+  path: '/services/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin-login': typeof AdminLoginRoute
+  '/become-a-technician': typeof BecomeATechnicianRoute
+  '/book': typeof BookRoute
+  '/booking-confirmation': typeof BookingConfirmationRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/pricing': typeof PricingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/track': typeof TrackRoute
+  '/why-us': typeof WhyUsRoute
+  '/services/$slug': typeof ServicesSlugRoute
+  '/technicians/$slug': typeof TechniciansSlugRoute
+  '/services/': typeof ServicesIndexRoute
+  '/technicians/': typeof TechniciansIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin-login': typeof AdminLoginRoute
+  '/become-a-technician': typeof BecomeATechnicianRoute
+  '/book': typeof BookRoute
+  '/booking-confirmation': typeof BookingConfirmationRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/pricing': typeof PricingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/track': typeof TrackRoute
+  '/why-us': typeof WhyUsRoute
+  '/services/$slug': typeof ServicesSlugRoute
+  '/technicians/$slug': typeof TechniciansSlugRoute
+  '/services': typeof ServicesIndexRoute
+  '/technicians': typeof TechniciansIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin-login': typeof AdminLoginRoute
+  '/become-a-technician': typeof BecomeATechnicianRoute
+  '/book': typeof BookRoute
+  '/booking-confirmation': typeof BookingConfirmationRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/pricing': typeof PricingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/track': typeof TrackRoute
+  '/why-us': typeof WhyUsRoute
+  '/services/$slug': typeof ServicesSlugRoute
+  '/technicians/$slug': typeof TechniciansSlugRoute
+  '/services/': typeof ServicesIndexRoute
+  '/technicians/': typeof TechniciansIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin-login'
+    | '/become-a-technician'
+    | '/book'
+    | '/booking-confirmation'
+    | '/contact'
+    | '/faq'
+    | '/pricing'
+    | '/sitemap.xml'
+    | '/track'
+    | '/why-us'
+    | '/services/$slug'
+    | '/technicians/$slug'
+    | '/services/'
+    | '/technicians/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin-login'
+    | '/become-a-technician'
+    | '/book'
+    | '/booking-confirmation'
+    | '/contact'
+    | '/faq'
+    | '/pricing'
+    | '/sitemap.xml'
+    | '/track'
+    | '/why-us'
+    | '/services/$slug'
+    | '/technicians/$slug'
+    | '/services'
+    | '/technicians'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin-login'
+    | '/become-a-technician'
+    | '/book'
+    | '/booking-confirmation'
+    | '/contact'
+    | '/faq'
+    | '/pricing'
+    | '/sitemap.xml'
+    | '/track'
+    | '/why-us'
+    | '/services/$slug'
+    | '/technicians/$slug'
+    | '/services/'
+    | '/technicians/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  BecomeATechnicianRoute: typeof BecomeATechnicianRoute
+  BookRoute: typeof BookRoute
+  BookingConfirmationRoute: typeof BookingConfirmationRoute
+  ContactRoute: typeof ContactRoute
+  FaqRoute: typeof FaqRoute
+  PricingRoute: typeof PricingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TrackRoute: typeof TrackRoute
+  WhyUsRoute: typeof WhyUsRoute
+  ServicesSlugRoute: typeof ServicesSlugRoute
+  TechniciansSlugRoute: typeof TechniciansSlugRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
+  TechniciansIndexRoute: typeof TechniciansIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/why-us': {
+      id: '/why-us'
+      path: '/why-us'
+      fullPath: '/why-us'
+      preLoaderRoute: typeof WhyUsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking-confirmation': {
+      id: '/booking-confirmation'
+      path: '/booking-confirmation'
+      fullPath: '/booking-confirmation'
+      preLoaderRoute: typeof BookingConfirmationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-a-technician': {
+      id: '/become-a-technician'
+      path: '/become-a-technician'
+      fullPath: '/become-a-technician'
+      preLoaderRoute: typeof BecomeATechnicianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +304,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/technicians/': {
+      id: '/technicians/'
+      path: '/technicians'
+      fullPath: '/technicians/'
+      preLoaderRoute: typeof TechniciansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/': {
+      id: '/services/'
+      path: '/services'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/technicians/$slug': {
+      id: '/technicians/$slug'
+      path: '/technicians/$slug'
+      fullPath: '/technicians/$slug'
+      preLoaderRoute: typeof TechniciansSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/$slug': {
+      id: '/services/$slug'
+      path: '/services/$slug'
+      fullPath: '/services/$slug'
+      preLoaderRoute: typeof ServicesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  BecomeATechnicianRoute: BecomeATechnicianRoute,
+  BookRoute: BookRoute,
+  BookingConfirmationRoute: BookingConfirmationRoute,
+  ContactRoute: ContactRoute,
+  FaqRoute: FaqRoute,
+  PricingRoute: PricingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TrackRoute: TrackRoute,
+  WhyUsRoute: WhyUsRoute,
+  ServicesSlugRoute: ServicesSlugRoute,
+  TechniciansSlugRoute: TechniciansSlugRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
+  TechniciansIndexRoute: TechniciansIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

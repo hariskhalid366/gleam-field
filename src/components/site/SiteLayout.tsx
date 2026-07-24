@@ -1,0 +1,21 @@
+import { useRouterState } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { Navbar } from "./Navbar";
+import { Footer } from "./Footer";
+
+// Full-bleed routes hide the standard site chrome.
+const bareRoutes = ["/admin-login"];
+
+export function SiteLayout({ children }: { children: ReactNode }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const bare = bareRoutes.some((p) => pathname.startsWith(p));
+
+  if (bare) return <>{children}</>;
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <main className="flex-1 pt-24">{children}</main>
+      <Footer />
+    </div>
+  );
+}
