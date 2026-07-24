@@ -78,7 +78,7 @@ function BecomePage() {
             ))}
           </div>
           <div className="mt-10 flex justify-center">
-            <Button size="lg" className="btn-press shadow-[var(--shadow-glow)]">Start Application</Button>
+            <Button asChild size="lg" className="btn-press shadow-[var(--shadow-glow)]"><Link to="/apply">Start Application</Link></Button>
           </div>
         </div>
       </section>
