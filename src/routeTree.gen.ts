@@ -27,6 +27,7 @@ import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
+import { Route as AdminVerificationIndexRouteImport } from './routes/admin.verification.index'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
 
@@ -120,6 +121,11 @@ const ServicesSlugRoute = ServicesSlugRouteImport.update({
   path: '/services/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVerificationIndexRoute = AdminVerificationIndexRouteImport.update({
+  id: '/verification/',
+  path: '/verification/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
   id: '/bookings/',
   path: '/bookings/',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/technicians/': typeof TechniciansIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/bookings/': typeof AdminBookingsIndexRoute
+  '/admin/verification/': typeof AdminVerificationIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/technicians': typeof TechniciansIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/bookings': typeof AdminBookingsIndexRoute
+  '/admin/verification': typeof AdminVerificationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/technicians/': typeof TechniciansIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/bookings/': typeof AdminBookingsIndexRoute
+  '/admin/verification/': typeof AdminVerificationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/technicians/'
     | '/admin/bookings/$bookingId'
     | '/admin/bookings/'
+    | '/admin/verification/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/technicians'
     | '/admin/bookings/$bookingId'
     | '/admin/bookings'
+    | '/admin/verification'
   id:
     | '__root__'
     | '/'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/technicians/'
     | '/admin/bookings/$bookingId'
     | '/admin/bookings/'
+    | '/admin/verification/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -413,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/verification/': {
+      id: '/admin/verification/'
+      path: '/verification'
+      fullPath: '/admin/verification/'
+      preLoaderRoute: typeof AdminVerificationIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/bookings/': {
       id: '/admin/bookings/'
       path: '/bookings'
@@ -434,12 +453,14 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
   AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
+  AdminVerificationIndexRoute: typeof AdminVerificationIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
   AdminBookingsIndexRoute: AdminBookingsIndexRoute,
+  AdminVerificationIndexRoute: AdminVerificationIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
