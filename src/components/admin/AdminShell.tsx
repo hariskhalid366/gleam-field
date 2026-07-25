@@ -25,7 +25,9 @@ import {
 } from "@/data/admin";
 import { StatusPill } from "./kit";
 
-const nav = [
+type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; exact?: boolean; badge?: number };
+
+const nav: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { to: "/admin/technicians", label: "Technicians", icon: Wrench },
@@ -41,7 +43,7 @@ const nav = [
   { to: "/admin/cms", label: "CMS", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: Settings },
   { to: "/admin/profile", label: "Profile", icon: UserCircle },
-] as const;
+];
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -109,12 +111,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
                   {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
-                  {!collapsed && "badge" in item && item.badge ? (
+                  {!collapsed && item.badge ? (
                     <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">
                       {item.badge}
                     </span>
                   ) : null}
-                  {collapsed && "badge" in item && item.badge ? (
+                  {collapsed && item.badge ? (
                     <span className="absolute ml-6 -mt-5 h-2 w-2 rounded-full bg-destructive" />
                   ) : null}
                 </Link>
