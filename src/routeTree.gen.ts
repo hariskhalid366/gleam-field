@@ -28,6 +28,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
 
 const WhyUsRoute = WhyUsRouteImport.update({
   id: '/why-us',
@@ -124,6 +125,11 @@ const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
   path: '/bookings/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/technicians/': typeof TechniciansIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/bookings/': typeof AdminBookingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/services': typeof ServicesIndexRoute
   '/technicians': typeof TechniciansIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/bookings': typeof AdminBookingsIndexRoute
 }
 export interface FileRoutesById {
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/technicians/': typeof TechniciansIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/bookings/': typeof AdminBookingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/services/'
     | '/technicians/'
+    | '/admin/bookings/$bookingId'
     | '/admin/bookings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/services'
     | '/technicians'
+    | '/admin/bookings/$bookingId'
     | '/admin/bookings'
   id:
     | '__root__'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/services/'
     | '/technicians/'
+    | '/admin/bookings/$bookingId'
     | '/admin/bookings/'
   fileRoutesById: FileRoutesById
 }
@@ -408,16 +420,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
   AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
+  AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
   AdminBookingsIndexRoute: AdminBookingsIndexRoute,
 }
 
