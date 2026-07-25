@@ -28,6 +28,10 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AdminTechniciansRouteImport } from './routes/admin.technicians'
+import { Route as AdminServicesRouteImport } from './routes/admin.services'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminVerificationIndexRouteImport } from './routes/admin.verification.index'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
 import { Route as AdminVerificationTechIdRouteImport } from './routes/admin.verification.$techId'
@@ -128,6 +132,26 @@ const AdminTechniciansRoute = AdminTechniciansRouteImport.update({
   path: '/technicians',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminServicesRoute = AdminServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCalendarRoute = AdminCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminVerificationIndexRoute = AdminVerificationIndexRouteImport.update({
   id: '/verification/',
   path: '/verification/',
@@ -163,6 +187,10 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/services': typeof AdminServicesRoute
   '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
@@ -187,6 +215,10 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/services': typeof AdminServicesRoute
   '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
@@ -213,6 +245,10 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/services': typeof AdminServicesRoute
   '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
@@ -240,6 +276,10 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/calendar'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/services'
     | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
@@ -264,6 +304,10 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/calendar'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/services'
     | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
@@ -289,6 +333,10 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/calendar'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/services'
     | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
@@ -456,6 +504,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTechniciansRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/services': {
+      id: '/admin/services'
+      path: '/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AdminServicesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/calendar': {
+      id: '/admin/calendar'
+      path: '/calendar'
+      fullPath: '/admin/calendar'
+      preLoaderRoute: typeof AdminCalendarRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/verification/': {
       id: '/admin/verification/'
       path: '/verification'
@@ -488,6 +564,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminCalendarRoute: typeof AdminCalendarRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminServicesRoute: typeof AdminServicesRoute
   AdminTechniciansRoute: typeof AdminTechniciansRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
@@ -497,6 +577,10 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminCalendarRoute: AdminCalendarRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminServicesRoute: AdminServicesRoute,
   AdminTechniciansRoute: AdminTechniciansRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
