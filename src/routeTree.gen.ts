@@ -27,6 +27,7 @@ import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
+import { Route as AdminTechniciansRouteImport } from './routes/admin.technicians'
 import { Route as AdminVerificationIndexRouteImport } from './routes/admin.verification.index'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
 import { Route as AdminVerificationTechIdRouteImport } from './routes/admin.verification.$techId'
@@ -122,6 +123,11 @@ const ServicesSlugRoute = ServicesSlugRouteImport.update({
   path: '/services/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTechniciansRoute = AdminTechniciansRouteImport.update({
+  id: '/technicians',
+  path: '/technicians',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminVerificationIndexRoute = AdminVerificationIndexRouteImport.update({
   id: '/verification/',
   path: '/verification/',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
     | '/admin/'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
     | '/admin'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
     | '/admin/'
@@ -437,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/technicians': {
+      id: '/admin/technicians'
+      path: '/technicians'
+      fullPath: '/admin/technicians'
+      preLoaderRoute: typeof AdminTechniciansRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/verification/': {
       id: '/admin/verification/'
       path: '/verification'
@@ -469,6 +488,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminTechniciansRoute: typeof AdminTechniciansRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
   AdminVerificationTechIdRoute: typeof AdminVerificationTechIdRoute
@@ -477,6 +497,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminTechniciansRoute: AdminTechniciansRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
   AdminVerificationTechIdRoute: AdminVerificationTechIdRoute,
