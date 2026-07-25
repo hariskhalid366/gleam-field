@@ -20,11 +20,22 @@ import { Route as BookRouteImport } from './routes/book'
 import { Route as BecomeATechnicianRouteImport } from './routes/become-a-technician'
 import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AdminLoginRouteImport } from './routes/admin-login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TechniciansIndexRouteImport } from './routes/technicians.index'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
+import { Route as AdminTechniciansRouteImport } from './routes/admin.technicians'
+import { Route as AdminServicesRouteImport } from './routes/admin.services'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
+import { Route as AdminVerificationIndexRouteImport } from './routes/admin.verification.index'
+import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
+import { Route as AdminVerificationTechIdRouteImport } from './routes/admin.verification.$techId'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
 
 const WhyUsRoute = WhyUsRouteImport.update({
   id: '/why-us',
@@ -81,6 +92,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin-login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -96,6 +112,11 @@ const ServicesIndexRoute = ServicesIndexRouteImport.update({
   path: '/services/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const TechniciansSlugRoute = TechniciansSlugRouteImport.update({
   id: '/technicians/$slug',
   path: '/technicians/$slug',
@@ -106,9 +127,55 @@ const ServicesSlugRoute = ServicesSlugRouteImport.update({
   path: '/services/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTechniciansRoute = AdminTechniciansRouteImport.update({
+  id: '/technicians',
+  path: '/technicians',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminServicesRoute = AdminServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCalendarRoute = AdminCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVerificationIndexRoute = AdminVerificationIndexRouteImport.update({
+  id: '/verification/',
+  path: '/verification/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
+  id: '/bookings/',
+  path: '/bookings/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVerificationTechIdRoute = AdminVerificationTechIdRouteImport.update({
+  id: '/verification/$techId',
+  path: '/verification/$techId',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
@@ -120,10 +187,20 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/technicians/': typeof TechniciansIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/verification/$techId': typeof AdminVerificationTechIdRoute
+  '/admin/bookings/': typeof AdminBookingsIndexRoute
+  '/admin/verification/': typeof AdminVerificationIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -138,14 +215,25 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/services': typeof ServicesIndexRoute
   '/technicians': typeof TechniciansIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/verification/$techId': typeof AdminVerificationTechIdRoute
+  '/admin/bookings': typeof AdminBookingsIndexRoute
+  '/admin/verification': typeof AdminVerificationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
@@ -157,15 +245,26 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/technicians/': typeof TechniciansIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/verification/$techId': typeof AdminVerificationTechIdRoute
+  '/admin/bookings/': typeof AdminBookingsIndexRoute
+  '/admin/verification/': typeof AdminVerificationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/admin-login'
     | '/apply'
     | '/become-a-technician'
@@ -177,10 +276,20 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/calendar'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/services'
+    | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
+    | '/admin/'
     | '/services/'
     | '/technicians/'
+    | '/admin/bookings/$bookingId'
+    | '/admin/verification/$techId'
+    | '/admin/bookings/'
+    | '/admin/verification/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -195,13 +304,24 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/calendar'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/services'
+    | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
+    | '/admin'
     | '/services'
     | '/technicians'
+    | '/admin/bookings/$bookingId'
+    | '/admin/verification/$techId'
+    | '/admin/bookings'
+    | '/admin/verification'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/admin-login'
     | '/apply'
     | '/become-a-technician'
@@ -213,14 +333,25 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/track'
     | '/why-us'
+    | '/admin/calendar'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/services'
+    | '/admin/technicians'
     | '/services/$slug'
     | '/technicians/$slug'
+    | '/admin/'
     | '/services/'
     | '/technicians/'
+    | '/admin/bookings/$bookingId'
+    | '/admin/verification/$techId'
+    | '/admin/bookings/'
+    | '/admin/verification/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   ApplyRoute: typeof ApplyRoute
   BecomeATechnicianRoute: typeof BecomeATechnicianRoute
@@ -317,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -338,6 +476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/technicians/$slug': {
       id: '/technicians/$slug'
       path: '/technicians/$slug'
@@ -352,11 +497,103 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/technicians': {
+      id: '/admin/technicians'
+      path: '/technicians'
+      fullPath: '/admin/technicians'
+      preLoaderRoute: typeof AdminTechniciansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/services': {
+      id: '/admin/services'
+      path: '/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AdminServicesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/calendar': {
+      id: '/admin/calendar'
+      path: '/calendar'
+      fullPath: '/admin/calendar'
+      preLoaderRoute: typeof AdminCalendarRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/verification/': {
+      id: '/admin/verification/'
+      path: '/verification'
+      fullPath: '/admin/verification/'
+      preLoaderRoute: typeof AdminVerificationIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings/': {
+      id: '/admin/bookings/'
+      path: '/bookings'
+      fullPath: '/admin/bookings/'
+      preLoaderRoute: typeof AdminBookingsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/verification/$techId': {
+      id: '/admin/verification/$techId'
+      path: '/verification/$techId'
+      fullPath: '/admin/verification/$techId'
+      preLoaderRoute: typeof AdminVerificationTechIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminCalendarRoute: typeof AdminCalendarRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminServicesRoute: typeof AdminServicesRoute
+  AdminTechniciansRoute: typeof AdminTechniciansRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
+  AdminVerificationTechIdRoute: typeof AdminVerificationTechIdRoute
+  AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
+  AdminVerificationIndexRoute: typeof AdminVerificationIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCalendarRoute: AdminCalendarRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminServicesRoute: AdminServicesRoute,
+  AdminTechniciansRoute: AdminTechniciansRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
+  AdminVerificationTechIdRoute: AdminVerificationTechIdRoute,
+  AdminBookingsIndexRoute: AdminBookingsIndexRoute,
+  AdminVerificationIndexRoute: AdminVerificationIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   ApplyRoute: ApplyRoute,
   BecomeATechnicianRoute: BecomeATechnicianRoute,
