@@ -24,6 +24,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TechniciansIndexRouteImport } from './routes/technicians.index'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 
@@ -102,6 +103,11 @@ const ServicesIndexRoute = ServicesIndexRouteImport.update({
   path: '/services/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const TechniciansSlugRoute = TechniciansSlugRouteImport.update({
   id: '/technicians/$slug',
   path: '/technicians/$slug',
@@ -115,7 +121,7 @@ const ServicesSlugRoute = ServicesSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
@@ -129,12 +135,12 @@ export interface FileRoutesByFullPath {
   '/why-us': typeof WhyUsRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/technicians/': typeof TechniciansIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/admin-login': typeof AdminLoginRoute
   '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
@@ -148,13 +154,14 @@ export interface FileRoutesByTo {
   '/why-us': typeof WhyUsRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/services': typeof ServicesIndexRoute
   '/technicians': typeof TechniciansIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin-login': typeof AdminLoginRoute
   '/apply': typeof ApplyRoute
   '/become-a-technician': typeof BecomeATechnicianRoute
@@ -168,6 +175,7 @@ export interface FileRoutesById {
   '/why-us': typeof WhyUsRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/technicians/$slug': typeof TechniciansSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/technicians/': typeof TechniciansIndexRoute
 }
@@ -189,12 +197,12 @@ export interface FileRouteTypes {
     | '/why-us'
     | '/services/$slug'
     | '/technicians/$slug'
+    | '/admin/'
     | '/services/'
     | '/technicians/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/admin-login'
     | '/apply'
     | '/become-a-technician'
@@ -208,6 +216,7 @@ export interface FileRouteTypes {
     | '/why-us'
     | '/services/$slug'
     | '/technicians/$slug'
+    | '/admin'
     | '/services'
     | '/technicians'
   id:
@@ -227,13 +236,14 @@ export interface FileRouteTypes {
     | '/why-us'
     | '/services/$slug'
     | '/technicians/$slug'
+    | '/admin/'
     | '/services/'
     | '/technicians/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   ApplyRoute: typeof ApplyRoute
   BecomeATechnicianRoute: typeof BecomeATechnicianRoute
@@ -358,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/technicians/$slug': {
       id: '/technicians/$slug'
       path: '/technicians/$slug'
@@ -375,9 +392,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   ApplyRoute: ApplyRoute,
   BecomeATechnicianRoute: BecomeATechnicianRoute,

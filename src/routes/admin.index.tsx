@@ -125,10 +125,7 @@ function Dashboard() {
           label={range === "monthly" ? "Revenue (monthly)" : "Revenue (weekly)"}
           value={range === "monthly" ? 81250 : 81250 / 4}
           prefix="$" delta={8}
-          sub={
-            <>
-            </> as unknown as string
-          }
+          sub={range === "monthly" ? "Jul 2026 to date" : "This week"}
         />
         <StatCard icon={ShieldCheck} tone="violet" label="Pending approvals" value={pendingVerificationCount} delta={20} />
         <StatCard icon={Wrench} tone="cyan" label="Active technicians" value={activeTechs} sub={`${adminTechnicians.length - activeTechs} inactive`} delta={5} />
