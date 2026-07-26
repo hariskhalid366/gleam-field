@@ -20,16 +20,27 @@ before(async () => {
 
 describe("ServicePro API Security & Integration Tests", () => {
   let app: any;
-  let customerUser: any;
   let registerResponse: any;
+  let adminToken: string;
+  let adminUserInstance: any;
 
   before(async () => {
     // Import inside before hook to ensure environment variables are already set
     const { createApp } = await import("../app.js");
     const { connectDatabase } = await import("../config/db.js");
+    const { User } = await import("../models/user.model.js");
 
     await connectDatabase();
     app = createApp();
+
+    // Create an admin user directly in the database for admin route testing
+    adminUserInstance = await User.create({
+      name: "System Admin",
+      email: "admin@servicepro.io",
+      password: "AdminPassword123!",
+      role: "admin",
+      isActive: true,
+    });
   });
 
   after(async () => {
@@ -131,6 +142,20 @@ describe("ServicePro API Security & Integration Tests", () => {
       assert.strictEqual(res.body.success, false);
       assert.strictEqual(res.body.message, "Invalid email or password");
     });
+
+    test("POST /auth/login should authenticate admin user successfully", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/login")
+        .send({
+          email: "admin@servicepro.io",
+          password: "AdminPassword123!"
+        })
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.ok(res.body.data.accessToken);
+      adminToken = res.body.data.accessToken;
+    });
   });
 
   describe("3. Authorization and Protected Routes Verification", () => {
@@ -170,7 +195,137 @@ describe("ServicePro API Security & Integration Tests", () => {
     });
   });
 
-  describe("4. Refresh Token Rotation and Replay/Reuse Prevention", () => {
+  describe("4. Support Tickets Subsystem", () => {
+    let ticketId: string;
+
+    test("POST /support/tickets should open a support ticket for customer", async () => {
+      const res = await request(app)
+        .post("/api/v1/support/tickets")
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .send({
+          subject: "Charged twice for service",
+          category: "Billing",
+          priority: "high",
+          message: "Please refund the duplicate payment."
+        })
+        .expect(201);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.data.subject, "Charged twice for service");
+      assert.strictEqual(res.body.data.category, "Billing");
+      assert.strictEqual(res.body.data.status, "open");
+      assert.strictEqual(res.body.data.messages.length, 1);
+      assert.strictEqual(res.body.data.messages[0].text, "Please refund the duplicate payment.");
+
+      ticketId = res.body.data._id;
+    });
+
+    test("GET /support/tickets should retrieve support ticket for the owner", async () => {
+      const res = await request(app)
+        .get("/api/v1/support/tickets")
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.meta.total, 1);
+      assert.strictEqual(res.body.data[0]._id, ticketId);
+    });
+
+    test("POST /support/tickets/:id/messages should add message replies", async () => {
+      const res = await request(app)
+        .post(`/api/v1/support/tickets/${ticketId}/messages`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ text: "Checking this. Let me verify with our gateway." })
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.data.messages.length, 2);
+      assert.strictEqual(res.body.data.messages[1].text, "Checking this. Let me verify with our gateway.");
+    });
+  });
+
+  describe("5. Admin Platform Operations (Users, Payments, Stats)", () => {
+    test("GET /users should list registered accounts for admins only", async () => {
+      // Admin should succeed
+      const res = await request(app)
+        .get("/api/v1/users")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.ok(res.body.meta.total >= 2); // Admin and Customer
+
+      // Customer should be forbidden
+      await request(app)
+        .get("/api/v1/users")
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .expect(403);
+    });
+
+    test("PATCH /users/:id/status should suspend an isolated account and revoke its active session families", async () => {
+      // Create a separate user strictly for suspension test so we don't invalidate our main customer token version
+      const registerRes = await request(app)
+        .post("/api/v1/auth/register")
+        .send({
+          name: "Suspend Test User",
+          email: "suspend-test@example.com",
+          password: "StrongPassword123!",
+          phone: "+111222333",
+          city: "New York"
+        })
+        .expect(201);
+
+      const testUserId = registerRes.body.data.user._id;
+      const testUserAccessToken = registerRes.body.data.accessToken;
+
+      // 1. Verify they are active and can call `/auth/me`
+      await request(app)
+        .get("/api/v1/auth/me")
+        .set("Authorization", `Bearer ${testUserAccessToken}`)
+        .expect(200);
+
+      // 2. Suspend them
+      const res = await request(app)
+        .patch(`/api/v1/users/${testUserId}/status`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ isActive: false })
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.data.isActive, false);
+
+      // 3. Verify that accessing `/auth/me` with their accessToken now fails as session is revoked
+      await request(app)
+        .get("/api/v1/auth/me")
+        .set("Authorization", `Bearer ${testUserAccessToken}`)
+        .expect(401);
+    });
+
+    test("GET /payments should list transaction reports", async () => {
+      // No payments created yet, should return empty array
+      const res = await request(app)
+        .get("/api/v1/payments")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.meta.total, 0);
+    });
+
+    test("GET /admin/stats should aggregate analytics", async () => {
+      const res = await request(app)
+        .get("/api/v1/admin/stats")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(typeof res.body.data.totalBookings, "number");
+      assert.strictEqual(typeof res.body.data.totalCustomers, "number");
+      assert.strictEqual(typeof res.body.data.totalRevenue, "number");
+    });
+  });
+
+  describe("6. Refresh Token Rotation and Replay/Reuse Prevention", () => {
     test("POST /auth/refresh should successfully rotate the refresh token once", async () => {
       const res = await request(app)
         .post("/api/v1/auth/refresh")
