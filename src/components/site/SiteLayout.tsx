@@ -4,7 +4,8 @@ import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
 // Full-bleed routes hide the standard site chrome.
-const bareRoutes = ["/admin-login"];
+// The admin panel ships its own chrome (AdminShell), so the marketing navbar/footer are hidden.
+const bareRoutes = ["/admin-login", "/admin"];
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
