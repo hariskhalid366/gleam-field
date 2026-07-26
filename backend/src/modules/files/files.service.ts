@@ -1,9 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "../../config/s3.js";
-import { env } from "../../config/env.js";
 import { FilesRepository } from "./files.repository.js";
 import { type IFile } from "../../models/file.model.js";
 
@@ -68,25 +65,12 @@ export class FilesService {
   ): Promise<IFile> {
     const fileExtension = path.extname(file.originalname);
     const randomName = crypto.randomUUID() + fileExtension;
-    const key = `${purpose}/${randomName}`;
 
-    let url: string;
-    if (s3Client && env.S3_BUCKET) {
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: env.S3_BUCKET,
-          Key: key,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-        }),
-      );
-      url = `${env.S3_ENDPOINT || `https://${env.S3_BUCKET}.s3.amazonaws.com`}/${key}`;
-    } else {
-      const uploadDir = path.join(process.cwd(), "public", "uploads", purpose);
-      fs.mkdirSync(uploadDir, { recursive: true });
-      fs.writeFileSync(path.join(uploadDir, randomName), file.buffer);
-      url = `/uploads/${purpose}/${randomName}`;
-    }
+    // Normal local file uploading to public folder (no S3 bucket)
+    const uploadDir = path.join(process.cwd(), "public", "uploads", purpose);
+    fs.mkdirSync(uploadDir, { recursive: true });
+    fs.writeFileSync(path.join(uploadDir, randomName), file.buffer);
+    const url = `/uploads/${purpose}/${randomName}`;
 
     const fileId = "FL-" + crypto.randomBytes(8).toString("hex").toUpperCase();
 

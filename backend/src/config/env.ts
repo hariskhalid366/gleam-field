@@ -26,13 +26,6 @@ const envSchema = z.object({
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
 
   LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).default("info"),
-
-  // S3 Compatible Upload Configurations
-  S3_ENDPOINT: z.string().optional(),
-  S3_BUCKET: z.string().optional(),
-  S3_ACCESS_KEY_ID: z.string().optional(),
-  S3_SECRET_ACCESS_KEY: z.string().optional(),
-  S3_REGION: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
