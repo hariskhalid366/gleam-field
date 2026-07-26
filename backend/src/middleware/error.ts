@@ -31,8 +31,12 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   }
 
   const logMeta = { method: req.method, url: req.originalUrl, statusCode, userId: req.user?.id };
-  if (statusCode >= 500) logger.error(err instanceof Error ? err : new Error(String(err)), logMeta);
-  else logger.warn(message, logMeta);
+  if (statusCode >= 500) {
+    const errorObj = err instanceof Error ? err : new Error(String(err));
+    logger.error(errorObj.message, { ...logMeta, error: errorObj });
+  } else {
+    logger.warn(message, logMeta);
+  }
 
   res.status(statusCode).json({
     success: false,
