@@ -29,12 +29,15 @@ import { Route as TechniciansSlugRouteImport } from './routes/technicians.$slug'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as AdminTechniciansRouteImport } from './routes/admin.technicians'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminServicesRouteImport } from './routes/admin.services'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminProfileRouteImport } from './routes/admin.profile'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCmsRouteImport } from './routes/admin.cms'
 import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminVerificationIndexRouteImport } from './routes/admin.verification.index'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin.bookings.index'
@@ -141,6 +144,11 @@ const AdminSupportRoute = AdminSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminServicesRoute = AdminServicesRouteImport.update({
   id: '/services',
   path: '/services',
@@ -156,6 +164,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -169,6 +182,11 @@ const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCmsRoute = AdminCmsRouteImport.update({
+  id: '/cms',
+  path: '/cms',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCalendarRoute = AdminCalendarRouteImport.update({
@@ -212,12 +230,15 @@ export interface FileRoutesByFullPath {
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/cms': typeof AdminCmsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -244,12 +265,15 @@ export interface FileRoutesByTo {
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/cms': typeof AdminCmsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -278,12 +302,15 @@ export interface FileRoutesById {
   '/track': typeof TrackRoute
   '/why-us': typeof WhyUsRoute
   '/admin/calendar': typeof AdminCalendarRoute
+  '/admin/cms': typeof AdminCmsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/technicians': typeof AdminTechniciansRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -313,12 +340,15 @@ export interface FileRouteTypes {
     | '/track'
     | '/why-us'
     | '/admin/calendar'
+    | '/admin/cms'
     | '/admin/customers'
     | '/admin/notifications'
     | '/admin/payments'
+    | '/admin/profile'
     | '/admin/reports'
     | '/admin/reviews'
     | '/admin/services'
+    | '/admin/settings'
     | '/admin/support'
     | '/admin/technicians'
     | '/services/$slug'
@@ -345,12 +375,15 @@ export interface FileRouteTypes {
     | '/track'
     | '/why-us'
     | '/admin/calendar'
+    | '/admin/cms'
     | '/admin/customers'
     | '/admin/notifications'
     | '/admin/payments'
+    | '/admin/profile'
     | '/admin/reports'
     | '/admin/reviews'
     | '/admin/services'
+    | '/admin/settings'
     | '/admin/support'
     | '/admin/technicians'
     | '/services/$slug'
@@ -378,12 +411,15 @@ export interface FileRouteTypes {
     | '/track'
     | '/why-us'
     | '/admin/calendar'
+    | '/admin/cms'
     | '/admin/customers'
     | '/admin/notifications'
     | '/admin/payments'
+    | '/admin/profile'
     | '/admin/reports'
     | '/admin/reviews'
     | '/admin/services'
+    | '/admin/settings'
     | '/admin/support'
     | '/admin/technicians'
     | '/services/$slug'
@@ -559,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSupportRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/services': {
       id: '/admin/services'
       path: '/services'
@@ -580,6 +623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/payments': {
       id: '/admin/payments'
       path: '/payments'
@@ -599,6 +649,13 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/admin/customers'
       preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/cms': {
+      id: '/admin/cms'
+      path: '/cms'
+      fullPath: '/admin/cms'
+      preLoaderRoute: typeof AdminCmsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/calendar': {
@@ -641,12 +698,15 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCalendarRoute: typeof AdminCalendarRoute
+  AdminCmsRoute: typeof AdminCmsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminProfileRoute: typeof AdminProfileRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminServicesRoute: typeof AdminServicesRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTechniciansRoute: typeof AdminTechniciansRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -658,12 +718,15 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCalendarRoute: AdminCalendarRoute,
+  AdminCmsRoute: AdminCmsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminProfileRoute: AdminProfileRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminServicesRoute: AdminServicesRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTechniciansRoute: AdminTechniciansRoute,
   AdminIndexRoute: AdminIndexRoute,
