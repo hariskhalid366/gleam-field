@@ -128,7 +128,8 @@ async function seed() {
       createdAt: daysAgo(180 - i * 4),
     });
   }
-  const createdBookings = await Booking.create(bookings);
+  // timestamps disabled so the seeded createdAt spread survives — reports need history.
+  const createdBookings = await Booking.insertMany(bookings, { timestamps: false });
 
   await Payment.create(
     createdBookings
@@ -154,7 +155,7 @@ async function seed() {
       service: b.service,
       rating: 4 + (i % 2),
       comment: "Arrived on time, explained everything clearly and left the place spotless.",
-      isVisible: true,
+      isHidden: false,
     })),
   );
 
