@@ -13,7 +13,9 @@
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/test/security.test.ts"
+    "test": "tsx --test src/test/security.test.ts",
+    "seed": "tsx src/scripts/seed.ts"
+
   },
   "dependencies": {
     "@types/multer": "^2.2.0",
