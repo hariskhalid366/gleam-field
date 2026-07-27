@@ -15,6 +15,27 @@ export const apiRouter = Router();
 
 /**
  * @openapi
+ * /:
+ *   get:
+ *     tags: [Auth]
+ *     security: []
+ *     summary: Welcome index route
+ *     responses:
+ *       200: { description: Welcome message }
+ */
+apiRouter.get("/", (_req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to the ServicePro API!",
+    status: "healthy",
+    docs: "/docs",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    version: "1.0.0",
+  });
+});
+
+/**
+ * @openapi
  * /health:
  *   get:
  *     tags: [Auth]
