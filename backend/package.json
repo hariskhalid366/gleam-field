@@ -13,7 +13,8 @@
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/test/security.test.ts"
+    "test": "tsx --test src/test/security.test.ts",
+    "create-admin": "tsx src/scripts/create-admin.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
