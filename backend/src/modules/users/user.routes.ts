@@ -5,6 +5,7 @@ import { authenticate, isAdmin } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validate.js";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { sendPaginated, sendSuccess } from "../../utils/response.js";
+import * as auditService from "../audit/audit.service.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { idParamSchema, paginationSchema } from "../common/query.validation.js";
 
@@ -90,6 +91,15 @@ userRouter.patch(
       user.tokenVersion += 1;
       await user.save();
     }
+
+    await auditService.record({
+      actor: req.user!.id,
+      actorEmail: req.user!.email,
+      action: isActive ? "user.activated" : "user.suspended",
+      targetType: "User",
+      targetId: user._id.toString(),
+      ip: req.ip,
+    });
 
     return sendSuccess(res, user, `User status updated to ${isActive ? "active" : "suspended"}`);
   }),

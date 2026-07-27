@@ -7,6 +7,8 @@ import { catchAsync } from "../../utils/catchAsync.js";
 import { sendPaginated, sendSuccess } from "../../utils/response.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { idParamSchema, paginationSchema } from "../common/query.validation.js";
+import * as auditService from "../audit/audit.service.js";
+import * as notificationService from "../notifications/notification.service.js";
 import { emitToRoom } from "../../sockets/index.js";
 import { logger } from "../../config/logger.js";
 
@@ -154,6 +156,23 @@ technicianRouter.patch(
       technicianId: updated._id?.toString(),
       status: req.body.status,
       by: req.user!.id,
+    });
+    await auditService.record({
+      actor: req.user!.id,
+      actorEmail: req.user!.email,
+      action: `technician.${req.body.status}`,
+      targetType: "Technician",
+      targetId: updated._id?.toString(),
+      meta: { reviewNotes: req.body.reviewNotes },
+      ip: req.ip,
+    });
+    await notificationService.send({
+      userId: updated.user.toString(),
+      type: "verification",
+      template: req.body.status === "approved" ? "technician.approved" : undefined,
+      title: `Application ${req.body.status}`,
+      body: req.body.reviewNotes ?? `Your ServicePro application is now ${req.body.status}.`,
+      data: { status: req.body.status },
     });
     emitToRoom(`user:${updated.user.toString()}`, "verification:updated", { status: req.body.status });
     return sendSuccess(res, updated, "Verification decision recorded");

@@ -26,7 +26,12 @@ const envSchema = z.object({
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
 
   LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).default("info"),
+
+  // File storage (local disk by default; point PUBLIC_FILE_BASE_URL at a CDN/S3 origin in prod)
+  UPLOAD_DIR: z.string().default("uploads"),
+  PUBLIC_FILE_BASE_URL: z.string().default("http://localhost:4000/uploads"),
 });
+
 
 const parsed = envSchema.safeParse(process.env);
 
