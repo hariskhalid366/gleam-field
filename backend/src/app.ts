@@ -38,7 +38,10 @@ export function createApp(): Express {
   app.use(globalLimiter);
 
   mountSwagger(app);
+  // Uploaded assets (local storage driver). Read-only, no directory listing.
+  app.use("/uploads", express.static(env.UPLOAD_DIR, { index: false, dotfiles: "deny", maxAge: "1d" }));
   app.use(env.API_PREFIX, apiRouter);
+
 
   app.use(notFoundHandler);
   app.use(errorHandler);
