@@ -24,6 +24,10 @@ const SERVICES = [
 const CITIES = ["Austin", "Dallas", "Houston", "Phoenix", "Denver"];
 const PASSWORD = process.env.SEED_PASSWORD ?? "ServicePro123";
 
+function pick<T>(arr: T[], i: number): T {
+  return arr[i % arr.length] as T;
+}
+
 function daysAgo(n: number) {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 }
@@ -65,7 +69,7 @@ async function seed() {
       phone: `+1555000${String(i + 1).padStart(4, "0")}`,
       password: PASSWORD,
       role: "customer" as const,
-      city: CITIES[i % CITIES.length],
+      city: pick(CITIES, i),
       isEmailVerified: true,
     })),
   );
@@ -77,7 +81,7 @@ async function seed() {
       phone: `+1555111${String(i + 1).padStart(4, "0")}`,
       password: PASSWORD,
       role: "technician" as const,
-      city: CITIES[i % CITIES.length],
+      city: pick(CITIES, i),
       isEmailVerified: true,
     })),
   );
@@ -85,9 +89,9 @@ async function seed() {
   const technicians = await Technician.create(
     techUsers.map((u, i) => ({
       user: u._id,
-      city: CITIES[i % CITIES.length],
+      city: pick(CITIES, i),
       bio: "Licensed, insured and background-checked field professional.",
-      services: [SERVICES[i % SERVICES.length].slug],
+      services: [pick(SERVICES, i).slug],
       experienceYears: 2 + (i % 12),
       hourlyRate: 45 + i * 5,
       rating: Number((4 + (i % 10) / 10).toFixed(1)),
@@ -106,9 +110,9 @@ async function seed() {
 
   const bookings = [];
   for (let i = 0; i < 40; i += 1) {
-    const service = services[i % services.length];
-    const customer = customers[i % customers.length];
-    const status = statuses[i % statuses.length];
+    const service = pick(services, i);
+    const customer = pick(customers, i);
+    const status = pick([...statuses], i);
     const isEmergency = i % 7 === 0;
     const base = isEmergency ? service.emergencyPrice : service.basePrice;
     const surcharge = isEmergency ? 25 : 0;
@@ -117,7 +121,7 @@ async function seed() {
     bookings.push({
       reference: `SP-${String(1000 + i)}`,
       customer: customer._id,
-      technician: status === "pending" ? undefined : approved[i % approved.length]._id,
+      technician: status === "pending" ? undefined : pick(approved, i)._id,
       service: service._id,
       status,
       isEmergency,
@@ -129,7 +133,8 @@ async function seed() {
     });
   }
   // timestamps disabled so the seeded createdAt spread survives — reports need history.
-  const createdBookings = await Booking.insertMany(bookings, { timestamps: false });
+  await Booking.insertMany(bookings, { timestamps: false } as Parameters<typeof Booking.insertMany>[1]);
+  const createdBookings = await Booking.find().sort({ reference: 1 }).lean();
 
   await Payment.create(
     createdBookings
@@ -165,16 +170,16 @@ async function seed() {
       category: "Billing",
       priority: "high",
       status: "open",
-      requester: customers[0]._id,
-      messages: [{ sender: customers[0]._id, text: "My refund for SP-1003 hasn't arrived yet.", createdAt: new Date() }],
+      requester: pick(customers, 0)._id,
+      messages: [{ sender: pick(customers, 0)._id, text: "My refund for SP-1003 hasn't arrived yet.", createdAt: new Date() }],
     },
     {
       subject: "Technician was late",
       category: "Booking",
       priority: "medium",
       status: "pending",
-      requester: customers[1]._id,
-      messages: [{ sender: customers[1]._id, text: "The pro showed up 40 minutes late.", createdAt: new Date() }],
+      requester: pick(customers, 1)._id,
+      messages: [{ sender: pick(customers, 1)._id, text: "The pro showed up 40 minutes late.", createdAt: new Date() }],
     },
   ]);
 
