@@ -1,14 +1,27 @@
 import { Router } from "express";
-import { Booking } from "../../models/booking.model.js";
-import { User } from "../../models/user.model.js";
-import { Payment } from "../../models/payment.model.js";
-import { Review } from "../../models/review.model.js";
-import { SupportTicket } from "../../models/supportTicket.model.js";
+import { z } from "zod";
+import { BOOKING_STATUSES } from "../../models/booking.model.js";
 import { authenticate, isAdmin } from "../../middleware/auth.js";
+import { validate } from "../../middleware/validate.js";
 import { catchAsync } from "../../utils/catchAsync.js";
-import { sendSuccess } from "../../utils/response.js";
+import { paginationSchema } from "../common/query.validation.js";
+import { AdminController } from "./admin.controller.js";
 
 export const adminRouter = Router();
+
+const bookingsListQuery = paginationSchema.extend({
+  status: z.enum(BOOKING_STATUSES).optional(),
+  customer: z.string().optional(),
+  technician: z.string().optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+});
+
+const calendarQuery = z.object({
+  year: z.coerce.number().int().min(2020).max(2100),
+  month: z.coerce.number().int().min(1).max(12),
+  technicianId: z.string().optional(),
+});
 
 /**
  * @openapi
@@ -16,52 +29,56 @@ export const adminRouter = Router();
  *   get:
  *     tags: [Admin]
  *     security: [{ bearerAuth: [] }]
- *     summary: Get aggregated dashboard statistics (admin only)
+ *     summary: Get aggregated statistics analytics (admin only)
  *     responses:
- *       200: { description: Aggregated analytics statistics }
+ *       200: { description: Analytics stats response }
+ */
+adminRouter.get("/stats", authenticate, isAdmin, catchAsync(AdminController.getStats));
+
+/**
+ * @openapi
+ * /admin/dashboard:
+ *   get:
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ *     summary: Get single aggregated admin dashboard response containing revenue, bookings telemetry, quick-actions, and time series charts
+ *     responses:
+ *       200: { description: Aggregated dashboard response }
+ */
+adminRouter.get("/dashboard", authenticate, isAdmin, catchAsync(AdminController.getDashboard));
+
+/**
+ * @openapi
+ * /admin/bookings:
+ *   get:
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ *     summary: List all bookings paginated with filters and summary blocks (admin only)
+ *     responses:
+ *       200: { description: Paginated list of bookings }
  */
 adminRouter.get(
-  "/stats",
+  "/bookings",
   authenticate,
   isAdmin,
-  catchAsync(async (req, res) => {
-    // 1. Total & Active Bookings Count
-    const totalBookings = await Booking.countDocuments();
-    const activeBookings = await Booking.countDocuments({
-      status: { $in: ["pending", "assigned", "accepted", "travelling", "in_progress"] },
-    });
+  validate({ query: bookingsListQuery }),
+  catchAsync(AdminController.getBookings),
+);
 
-    // 2. Total Customers & Technicians count
-    const totalCustomers = await User.countDocuments({ role: "customer" });
-    const totalTechnicians = await User.countDocuments({ role: "technician" });
-
-    // 3. Active support tickets
-    const activeTickets = await SupportTicket.countDocuments({
-      status: { $in: ["open", "pending"] },
-    });
-
-    // 4. Total revenue from completed payments
-    const revenueAggregation = await Payment.aggregate([
-      { $match: { status: "paid" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } },
-    ]);
-    const totalRevenue = revenueAggregation[0]?.total ?? 0;
-
-    // 5. Average customer satisfaction rating
-    const ratingAggregation = await Review.aggregate([
-      { $match: { isHidden: false } },
-      { $group: { _id: null, avgRating: { $avg: "$rating" } } },
-    ]);
-    const averageRating = ratingAggregation[0]?.avgRating ? parseFloat(ratingAggregation[0].avgRating.toFixed(2)) : 0.0;
-
-    return sendSuccess(res, {
-      totalBookings,
-      activeBookings,
-      totalCustomers,
-      totalTechnicians,
-      activeTickets,
-      totalRevenue,
-      averageRating,
-    }, "Dashboard statistics");
-  }),
+/**
+ * @openapi
+ * /admin/calendar:
+ *   get:
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ *     summary: Get calendar overview of scheduled bookings for a given month (admin only)
+ *     responses:
+ *       200: { description: Monthly calendar view data }
+ */
+adminRouter.get(
+  "/calendar",
+  authenticate,
+  isAdmin,
+  validate({ query: calendarQuery }),
+  catchAsync(AdminController.getCalendar),
 );

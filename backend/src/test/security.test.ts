@@ -323,9 +323,126 @@ describe("ServicePro API Security & Integration Tests", () => {
       assert.strictEqual(typeof res.body.data.totalCustomers, "number");
       assert.strictEqual(typeof res.body.data.totalRevenue, "number");
     });
+
+    test("GET /admin/dashboard should aggregate dashboard statistics", async () => {
+      const res = await request(app)
+        .get("/api/v1/admin/dashboard")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.ok(res.body.data.revenue);
+      assert.ok(res.body.data.bookingStats);
+      assert.ok(res.body.data.chartSeries);
+    });
+
+    test("GET /admin/bookings should list bookings paginated", async () => {
+      const res = await request(app)
+        .get("/api/v1/admin/bookings")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.ok(Array.isArray(res.body.data));
+    });
+
+    test("GET /admin/calendar should list monthly view events", async () => {
+      const res = await request(app)
+        .get("/api/v1/admin/calendar")
+        .query({ year: 2026, month: 7 })
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.ok(Array.isArray(res.body.data.events));
+    });
   });
 
-  describe("6. Refresh Token Rotation and Replay/Reuse Prevention", () => {
+  describe("6. Centralized File Upload Subsystem", () => {
+    let uploadedFileId: string;
+
+    test("POST /files should upload a valid avatar image file successfully", async () => {
+      const buffer = Buffer.from("fake-png-image-data-here");
+      const res = await request(app)
+        .post("/api/v1/files")
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .query({ purpose: "avatar" })
+        .attach("file", buffer, "profile.png")
+        .expect(201);
+
+      assert.strictEqual(res.body.success, true);
+      assert.ok(res.body.data.fileId);
+      assert.strictEqual(res.body.data.purpose, "avatar");
+      assert.strictEqual(res.body.data.mimeType, "image/png");
+      assert.ok(res.body.data.url.startsWith("/uploads/avatar/"));
+
+      uploadedFileId = res.body.data.fileId;
+    });
+
+    test("POST /files should reject file types not permitted for the specified purpose", async () => {
+      // Avatar only permits image/jpeg, image/png, image/webp. Giving application/pdf should fail.
+      const pdfBuffer = Buffer.from("%PDF-1.4 mock pdf data");
+      const res = await request(app)
+        .post("/api/v1/files")
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .query({ purpose: "avatar" })
+        .attach("file", pdfBuffer, "license.pdf")
+        .expect(400);
+
+      assert.strictEqual(res.body.success, false);
+      assert.ok(res.body.message.includes("Invalid file type"));
+    });
+
+    test("POST /files should reject files exceeding the maximum size limit for that purpose", async () => {
+      // Avatar is capped at 2MB. We construct a 3MB fake file.
+      const bigBuffer = Buffer.alloc(3 * 1024 * 1024); // 3MB of zeros
+      const res = await request(app)
+        .post("/api/v1/files")
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .query({ purpose: "avatar" })
+        .attach("file", bigBuffer, "giant.png")
+        .expect(400);
+
+      assert.strictEqual(res.body.success, false);
+      assert.ok(res.body.message.includes("File size exceeds maximum limit"));
+    });
+
+    test("GET /files/:id should retrieve uploaded file details for the owner", async () => {
+      const res = await request(app)
+        .get(`/api/v1/files/${uploadedFileId}`)
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.data.fileId, uploadedFileId);
+      assert.strictEqual(res.body.data.purpose, "avatar");
+    });
+
+    test("DELETE /files/:id should allow admins to delete file records", async () => {
+      // Customer should be forbidden from deleting
+      await request(app)
+        .delete(`/api/v1/files/${uploadedFileId}`)
+        .set("Authorization", `Bearer ${registerResponse.accessToken}`)
+        .expect(403);
+
+      // Admin should delete successfully
+      const res = await request(app)
+        .delete(`/api/v1/files/${uploadedFileId}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.message, "File asset deleted successfully");
+
+      // Verify it's gone
+      await request(app)
+        .get(`/api/v1/files/${uploadedFileId}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(404);
+    });
+  });
+
+  describe("7. Refresh Token Rotation and Replay/Reuse Prevention", () => {
     test("POST /auth/refresh should successfully rotate the refresh token once", async () => {
       const res = await request(app)
         .post("/api/v1/auth/refresh")

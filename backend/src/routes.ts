@@ -9,8 +9,30 @@ import { paymentRouter } from "./modules/payments/payment.routes.js";
 import { supportRouter } from "./modules/support/support.routes.js";
 import { userRouter } from "./modules/users/user.routes.js";
 import { adminRouter } from "./modules/admin/admin.routes.js";
+import { filesRouter } from "./modules/files/files.routes.js";
 
 export const apiRouter = Router();
+
+/**
+ * @openapi
+ * /:
+ *   get:
+ *     tags: [Auth]
+ *     security: []
+ *     summary: Welcome index route
+ *     responses:
+ *       200: { description: Welcome message }
+ */
+apiRouter.get("/", (_req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to the ServicePro API!",
+    status: "healthy",
+    docs: "/docs",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    version: "1.0.0",
+  });
+});
 
 /**
  * @openapi
@@ -41,3 +63,4 @@ apiRouter.use("/payments", paymentRouter);
 apiRouter.use("/support", supportRouter);
 apiRouter.use("/users", userRouter);
 apiRouter.use("/admin", adminRouter);
+apiRouter.use("/files", filesRouter);

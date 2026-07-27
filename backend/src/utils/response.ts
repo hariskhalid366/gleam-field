@@ -9,11 +9,13 @@ export function sendPaginated<T>(
   items: T[],
   meta: { page: number; limit: number; total: number },
   message = "OK",
+  extra?: Record<string, any>,
 ) {
   return res.status(200).json({
     success: true,
     message,
     data: items,
     meta: { ...meta, pages: Math.max(1, Math.ceil(meta.total / meta.limit)) },
+    ...(extra ? { extra } : {}),
   });
 }
