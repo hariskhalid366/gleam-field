@@ -13,6 +13,7 @@ cd backend
 cp .env.example .env      # then set real 64-char JWT secrets
 npm install
 npm run dev               # http://localhost:4000/api/v1
+npm run seed              # optional: demo catalogue, users, bookings, payments
 ```
 
 Docker (API + MongoDB):
@@ -31,7 +32,10 @@ src/
   config/      env (Zod-validated), db, logger (Winston), swagger
   models/      user, refreshToken, technician, booking, service, review
   middleware/  auth (JWT + role gate), validate (Zod), error, rateLimit
-  modules/     auth, services, technicians, bookings, reviews
+  modules/     auth, users, services, technicians, bookings, reviews,
+               payments, support, admin, files, cms, notifications,
+               audit, calendar, reports, settings
+  scripts/     seed.ts (demo data for an empty cluster)
   sockets/      Socket.IO server, JWT handshake, rooms + events
   utils/       token, ApiError, catchAsync, response
   app.ts       Express app + security middleware
@@ -65,6 +69,14 @@ src/
 | PATCH | `/bookings/:id/status` | admin · assigned tech · owner (cancel) |
 | GET/POST | `/reviews` (public read) · `/reviews` (create) | mixed |
 | PATCH | `/reviews/:id/moderate` | admin |
+| POST/GET | `/files` · `/files/:id` | authenticated (mime + size capped per purpose) |
+| GET | `/cms` | public |
+| PUT/DELETE | `/cms/:key` | admin |
+| GET/PATCH/POST | `/notifications` · `/notifications/:id/read` · `/notifications/broadcast` · `/notifications/templates` | authenticated · admin |
+| GET | `/admin/stats` · `/admin/reports` · `/admin/audit-logs` | admin |
+| GET/POST/PATCH | `/admin/calendar` · `/admin/calendar/leave` | admin |
+| GET | `/admin/settings` (secrets redacted) | admin |
+| PATCH | `/admin/settings/:scope` | super_admin |
 | GET | `/health` | public |
 
 ## Socket.IO events (structure)
