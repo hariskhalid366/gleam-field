@@ -132,8 +132,9 @@ async function seed() {
       createdAt: daysAgo(180 - i * 4),
     });
   }
-  // timestamps disabled so the seeded createdAt spread survives — reports need history.
-  await Booking.insertMany(bookings, { timestamps: false } as Parameters<typeof Booking.insertMany>[1]);
+  // Raw collection insert keeps the seeded createdAt spread — reports need history.
+  await Booking.collection.insertMany(bookings.map((b) => ({ ...b, updatedAt: b.createdAt })) as never[]);
+
   const createdBookings = await Booking.find().sort({ reference: 1 }).lean();
 
   await Payment.create(
