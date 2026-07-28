@@ -74,28 +74,36 @@ function AdminLogin() {
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Welcome back.</h1>
           <p className="mt-2 text-sm text-muted-foreground">This portal is for business administrators only.</p>
 
-          <form
-            className="mt-8 space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setLoading(true);
-              setTimeout(() => { setLoading(false); toast.success("Signed in (demo)"); }, 1200);
-            }}
-          >
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Work email</label>
               <div className="relative">
                 <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input required type="email" placeholder="you@company.com" className="pl-9 h-11" />
+                <Input
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="pl-9 h-11"
+                />
               </div>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Password</label>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input required type="password" placeholder="••••••••" className="pl-9 h-11" />
+                <Input
+                  required
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="pl-9 h-11"
+                />
               </div>
             </div>
+
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2">
                 <input type="checkbox" className="h-4 w-4 rounded border-border" /> Remember me
