@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { bookingStatuses, technicians } from "@/data/servicepro";
 import mapImg from "@/assets/isometric-map.png";
 import { cn } from "@/lib/utils";
+import { api, apiConfigured } from "@/lib/api";
 
 export const Route = createFileRoute("/track")({
   validateSearch: (search: Record<string, unknown>): { ref?: string } => ({
