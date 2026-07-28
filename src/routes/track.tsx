@@ -8,6 +8,9 @@ import mapImg from "@/assets/isometric-map.png";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/track")({
+  validateSearch: (search: Record<string, unknown>): { ref?: string } => ({
+    ref: typeof search.ref === "string" ? search.ref : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Track Your Booking — ServicePro" },
@@ -20,12 +23,34 @@ export const Route = createFileRoute("/track")({
 });
 
 function TrackPage() {
+  const { ref } = Route.useSearch();
   const [current, setCurrent] = useState(3);
   const tech = technicians[0];
+
+  // Live status polling when the API is configured; demo progression otherwise.
   useEffect(() => {
+    if (apiConfigured && ref) {
+      let stop = false;
+      const poll = async () => {
+        try {
+          const b = await api.bookings.detail(ref);
+          const idx = bookingStatuses.findIndex((s) => s.key === b.status);
+          if (!stop && idx >= 0) setCurrent(idx);
+        } catch {
+          /* keep last known state */
+        }
+      };
+      poll();
+      const t = setInterval(poll, 15000);
+      return () => {
+        stop = true;
+        clearInterval(t);
+      };
+    }
     const t = setInterval(() => setCurrent((c) => Math.min(c + 1, bookingStatuses.length - 1)), 8000);
     return () => clearInterval(t);
-  }, []);
+  }, [ref]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <p className="eyebrow">Booking #SP-A9F32K</p>
