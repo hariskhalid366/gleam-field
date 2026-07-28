@@ -10,6 +10,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, technicians, bookingSteps } from "@/data/servicepro";
 import mapImg from "@/assets/isometric-map.png";
 import { cn } from "@/lib/utils";
+import { api, apiConfigured } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
@@ -35,7 +37,39 @@ type State = {
 function BookingFlow() {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<State>({ address: { street: "", apt: "", city: "", postal: "", notes: "" }, images: [] });
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  const submitBooking = async () => {
+    setSubmitting(true);
+    const service = services.find((s) => s.slug === state.service);
+    let reference = "SP-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+    try {
+      if (apiConfigured) {
+        const created = await api.bookings.create({
+          service: state.service,
+          technician: state.techId,
+          scheduledAt: state.date?.toISOString(),
+          slot: state.slot,
+          address: state.address,
+          images: state.images,
+        });
+        reference = created.reference ?? created.id ?? reference;
+        toast.success("Booking confirmed");
+      } else {
+        toast.success("Booking confirmed (demo — API not configured)");
+      }
+      navigate({
+        to: "/booking-confirmation",
+        search: { ref: reference, service: service?.title ?? "" },
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not create the booking");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
 
   const canNext = () => {
     if (step === 0) return !!state.service;
@@ -67,10 +101,11 @@ function BookingFlow() {
             Continue <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
-          <Button className="btn-press shadow-[var(--shadow-glow)]" onClick={() => navigate({ to: "/booking-confirmation" })}>
-            Confirm Booking
+          <Button className="btn-press shadow-[var(--shadow-glow)]" disabled={submitting} onClick={submitBooking}>
+            {submitting ? "Confirming…" : "Confirm Booking"}
           </Button>
         )}
+
       </div>
     </div>
   );
