@@ -35,7 +35,39 @@ type State = {
 function BookingFlow() {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<State>({ address: { street: "", apt: "", city: "", postal: "", notes: "" }, images: [] });
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  const submitBooking = async () => {
+    setSubmitting(true);
+    const service = services.find((s) => s.slug === state.service);
+    let reference = "SP-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+    try {
+      if (apiConfigured) {
+        const created = await api.bookings.create({
+          service: state.service,
+          technician: state.techId,
+          scheduledAt: state.date?.toISOString(),
+          slot: state.slot,
+          address: state.address,
+          images: state.images,
+        });
+        reference = created.reference ?? created.id ?? reference;
+        toast.success("Booking confirmed");
+      } else {
+        toast.success("Booking confirmed (demo — API not configured)");
+      }
+      navigate({
+        to: "/booking-confirmation",
+        search: { ref: reference, service: service?.title ?? "" },
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not create the booking");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
 
   const canNext = () => {
     if (step === 0) return !!state.service;
