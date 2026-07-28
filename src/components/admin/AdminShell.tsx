@@ -133,17 +133,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="border-t border-border p-2">
-            <Link
-              to="/admin-login"
+            <button
+              type="button"
+              onClick={async () => {
+                if (apiConfigured) await api.auth.logout().catch(() => undefined);
+                tokenStore.clear();
+                navigate({ to: "/admin-login", replace: true });
+              }}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive",
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive",
                 collapsed && "justify-center px-0",
               )}
             >
               <LogOut className="h-[18px] w-[18px]" />
               {!collapsed && "Logout"}
-            </Link>
+            </button>
           </div>
+
         </aside>
 
         {/* Main column */}
