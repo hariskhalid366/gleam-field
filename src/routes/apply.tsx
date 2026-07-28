@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { api, apiConfigured } from "@/lib/api";
 import {
   Calendar,
   DollarSign,
@@ -118,6 +120,7 @@ type FormState = {
 function ApplyPage() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState<FormState>({
     name: "",
     phone: "",
@@ -521,7 +524,7 @@ function ApplyPage() {
                   onClick={submit}
                   className="btn-press shadow-[var(--shadow-glow)]"
                 >
-                  Submit application <Check className="ml-1 h-4 w-4" strokeWidth={3} />
+                  {submitting ? "Submitting…" : "Submit application"} <Check className="ml-1 h-4 w-4" strokeWidth={3} />
                 </Button>
               )}
             </div>
