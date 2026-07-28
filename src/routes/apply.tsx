@@ -161,10 +161,36 @@ function ApplyPage() {
     return false;
   }, [step, form]);
 
-  const submit = () => {
-    if (!canProceed) return;
-    setSubmitted(true);
+  const submit = async () => {
+    if (!canProceed || submitting) return;
+    setSubmitting(true);
+    try {
+      if (apiConfigured) {
+        await api.auth.register({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          city: form.city,
+          role: "technician",
+          password: `${form.email.split("@")[0]}Temp#2024`,
+          profile: {
+            experience: form.experience,
+            categories: form.categories,
+            bio: form.bio,
+          },
+        });
+        toast.success("Application submitted — we'll email you next steps.");
+      } else {
+        toast.success("Application submitted (demo — API not configured)");
+      }
+      setSubmitted(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not submit your application");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   if (submitted) {
     return (
