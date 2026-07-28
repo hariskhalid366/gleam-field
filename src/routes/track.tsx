@@ -54,7 +54,7 @@ function TrackPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <p className="eyebrow">Booking #SP-A9F32K</p>
+      <p className="eyebrow">Booking #{ref ?? "SP-A9F32K"}</p>
       <h1 className="mt-3 text-4xl font-light tracking-tight sm:text-5xl">
         Your technician is <span className="font-semibold">on the way.</span>
       </h1>
