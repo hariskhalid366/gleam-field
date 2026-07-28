@@ -10,6 +10,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, technicians, bookingSteps } from "@/data/servicepro";
 import mapImg from "@/assets/isometric-map.png";
 import { cn } from "@/lib/utils";
+import { api, apiConfigured } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
