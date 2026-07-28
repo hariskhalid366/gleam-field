@@ -21,6 +21,35 @@ export const Route = createFileRoute("/admin-login")({
 
 function AdminLogin() {
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (apiConfigured) {
+        const res = await api.auth.login(email, password);
+        if (res.user && !["admin", "super_admin"].includes(res.user.role)) {
+          throw new Error("This account does not have admin access.");
+        }
+        tokenStore.set(res.accessToken);
+        if (res.user) userStore.set(res.user);
+        toast.success("Signed in");
+      } else {
+        tokenStore.set("demo-session");
+        userStore.set({ id: "demo", name: "Alex Rivera", email: email || "admin@servicepro.com", role: "admin" });
+        toast.success("Signed in (demo — API not configured)");
+      }
+      navigate({ to: "/admin", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to sign in");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-[oklch(0.3_0.2_270)] lg:block">
