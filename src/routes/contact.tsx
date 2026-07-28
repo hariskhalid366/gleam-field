@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import mapImg from "@/assets/isometric-map.png";
+import { api, apiConfigured } from "@/lib/api";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -21,6 +22,32 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    setSending(true);
+    try {
+      if (apiConfigured) {
+        await api.support.createTicket({
+          name: data.get("name"),
+          email: data.get("email"),
+          subject: data.get("subject"),
+          category: "general",
+          message: data.get("message"),
+        });
+        toast.success("Message sent — we'll reply within 24 hours.");
+      } else {
+        toast.success("Message sent (demo — API not configured)");
+      }
+      setSent(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send your message");
+    } finally {
+      setSending(false);
+    }
+  };
   return (
     <div className="mx-auto max-w-6xl px-4 py-16">
       <p className="eyebrow">Contact</p>
@@ -31,20 +58,16 @@ function ContactPage() {
       <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_400px]">
         <div className="card-elevated p-8">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSent(true);
-              toast.success("Message sent — we'll reply within 24 hours.");
-            }}
+            onSubmit={handleSubmit}
             className="grid gap-4"
           >
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Name"><Input required placeholder="Jane Doe" /></Field>
-              <Field label="Email"><Input required type="email" placeholder="jane@example.com" /></Field>
+              <Field label="Name"><Input required name="name" placeholder="Jane Doe" /></Field>
+              <Field label="Email"><Input required name="email" type="email" placeholder="jane@example.com" /></Field>
             </div>
-            <Field label="Subject"><Input required placeholder="What can we help with?" /></Field>
-            <Field label="Message"><Textarea required rows={6} placeholder="Tell us a bit more..." /></Field>
-            <Button size="lg" className="mt-2 w-fit btn-press shadow-[var(--shadow-glow)]">{sent ? "Message sent ✓" : "Send message"}</Button>
+            <Field label="Subject"><Input required name="subject" placeholder="What can we help with?" /></Field>
+            <Field label="Message"><Textarea required name="message" rows={6} placeholder="Tell us a bit more..." /></Field>
+            <Button size="lg" className="mt-2 w-fit btn-press shadow-[var(--shadow-glow)]"disabled={sending}>{sending ? "Sending…" : sent ? "Message sent ✓" : "Send message"}</Button>
           </form>
         </div>
 
