@@ -6,6 +6,7 @@ import {
   PanelLeftClose, PanelLeftOpen, Plus, Zap, ChevronDown, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api, apiConfigured, tokenStore } from "@/lib/api";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
