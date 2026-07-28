@@ -67,10 +67,11 @@ function BookingFlow() {
             Continue <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
-          <Button className="btn-press shadow-[var(--shadow-glow)]" onClick={() => navigate({ to: "/booking-confirmation" })}>
-            Confirm Booking
+          <Button className="btn-press shadow-[var(--shadow-glow)]" disabled={submitting} onClick={submitBooking}>
+            {submitting ? "Confirming…" : "Confirm Booking"}
           </Button>
         )}
+
       </div>
     </div>
   );
