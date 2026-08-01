@@ -14,10 +14,12 @@ const serviceBody = z.object({
   name: z.string().min(2).max(120),
   slug: z.string().min(2).max(140).regex(/^[a-z0-9-]+$/),
   description: z.string().max(2000).optional(),
+  category: z.string().min(2).max(80).default("General"),
   basePrice: z.number().min(0),
   emergencyPrice: z.number().min(0),
   estimatedDuration: z.string().max(60).optional(),
   icon: z.string().max(200).optional(),
+  included: z.array(z.string().min(1).max(300)).max(20).default([]),
   isActive: z.boolean().default(true),
 });
 
@@ -39,6 +41,17 @@ serviceRouter.get(
   }),
 );
 
+/** Full catalog for pricing and listing management (admin only). */
+serviceRouter.get(
+  "/admin/list",
+  authenticate,
+  isAdmin,
+  catchAsync(async (_req, res) => {
+    const services = await Service.find().sort({ name: 1 }).lean();
+    return sendSuccess(res, services, "Services");
+  }),
+);
+
 /**
  * @openapi
  * /services/{id}:
@@ -50,6 +63,16 @@ serviceRouter.get(
  *       200: { description: Service }
  *       404: { description: Not found }
  */
+serviceRouter.get(
+  "/slug/:slug",
+  validate({ params: z.object({ slug: z.string().min(2).max(140).regex(/^[a-z0-9-]+$/) }) }),
+  catchAsync(async (req, res) => {
+    const service = await Service.findOne({ slug: req.params.slug, isActive: true }).lean();
+    if (!service) throw ApiError.notFound("Service not found");
+    return sendSuccess(res, service, "Service");
+  }),
+);
+
 serviceRouter.get(
   "/:id",
   validate({ params: idParamSchema }),

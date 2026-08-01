@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { Technician, VERIFICATION_STATUSES } from "../../models/technician.model.js";
+import { User } from "../../models/user.model.js";
 import { authenticate, authorize, isAdmin } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validate.js";
 import { catchAsync } from "../../utils/catchAsync.js";
@@ -16,6 +17,8 @@ const listQuery = paginationSchema.extend({
   city: z.string().max(80).optional(),
   service: z.string().max(80).optional(),
   status: z.enum(VERIFICATION_STATUSES).optional(),
+  minRating: z.coerce.number().min(0).max(5).optional(),
+  available: z.coerce.boolean().optional(),
 });
 
 const profileBody = z.object({
@@ -46,10 +49,20 @@ technicianRouter.get(
   "/",
   validate({ query: listQuery }),
   catchAsync(async (req, res) => {
-    const { page, limit, city, service } = req.query as unknown as z.infer<typeof listQuery>;
+    const { page, limit, city, service, q, minRating, available } = req.query as unknown as z.infer<typeof listQuery>;
     const filter: Record<string, unknown> = { verificationStatus: "approved" };
     if (city) filter.city = city;
     if (service) filter.services = service;
+    if (minRating !== undefined) filter.rating = { $gte: minRating };
+    if (available !== undefined) filter.isAvailable = available;
+    if (q) {
+      const matchingUsers = await User.find({ name: { $regex: q, $options: "i" } }).select("_id").lean();
+      filter.$or = [
+        { user: { $in: matchingUsers.map((user) => user._id) } },
+        { services: { $regex: q, $options: "i" } },
+        { city: { $regex: q, $options: "i" } },
+      ];
+    }
 
     const [items, total] = await Promise.all([
       Technician.find(filter)

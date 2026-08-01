@@ -10,7 +10,7 @@ export const TICKET_STATUSES = ["open", "pending", "resolved", "closed"] as cons
 export type TicketStatus = (typeof TICKET_STATUSES)[number];
 
 export interface ISupportMessage {
-  sender: mongoose.Types.ObjectId;
+  sender?: mongoose.Types.ObjectId;
   text: string;
   createdAt: Date;
 }
@@ -21,6 +21,9 @@ export interface ISupportTicket extends Document {
   priority: TicketPriority;
   status: TicketStatus;
   requester: mongoose.Types.ObjectId;
+  requesterName?: string;
+  requesterEmail?: string;
+  repeatContact: boolean;
   agent?: string;
   messages: ISupportMessage[];
 }
@@ -31,11 +34,14 @@ const supportTicketSchema = new Schema<ISupportTicket>(
     category: { type: String, enum: TICKET_CATEGORIES, required: true, index: true },
     priority: { type: String, enum: TICKET_PRIORITIES, default: "medium", index: true },
     status: { type: String, enum: TICKET_STATUSES, default: "open", index: true },
-    requester: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    requester: { type: Schema.Types.ObjectId, ref: "User", index: true },
+    requesterName: { type: String, trim: true, maxlength: 120 },
+    requesterEmail: { type: String, trim: true, lowercase: true, maxlength: 254, index: true },
+    repeatContact: { type: Boolean, default: false, index: true },
     agent: { type: String, trim: true, maxlength: 100 },
     messages: [
       {
-        sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        sender: { type: Schema.Types.ObjectId, ref: "User" },
         text: { type: String, required: true, maxlength: 2000 },
         createdAt: { type: Date, default: Date.now },
       },

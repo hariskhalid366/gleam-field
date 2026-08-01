@@ -22,6 +22,7 @@ export interface IBooking extends Document {
   scheduledFor: Date;
   address: { line1: string; city: string; postalCode?: string; notes?: string };
   location?: { type: "Point"; coordinates: [number, number] };
+  photos: { fileId: string; url: string }[];
   price: { base: number; surcharge: number; tax: number; total: number; currency: string };
   timeline: { status: BookingStatus; at: Date; by?: mongoose.Types.ObjectId; note?: string }[];
   cancellationReason?: string;
@@ -46,6 +47,12 @@ const bookingSchema = new Schema<IBooking>(
       type: { type: String, enum: ["Point"] },
       coordinates: { type: [Number] },
     },
+    photos: [
+      {
+        fileId: { type: String, required: true },
+        url: { type: String, required: true },
+      },
+    ],
     price: {
       base: { type: Number, required: true, min: 0 },
       surcharge: { type: Number, default: 0, min: 0 },

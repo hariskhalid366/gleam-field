@@ -14,7 +14,9 @@
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/test/security.test.ts",
-    "create-admin": "tsx src/scripts/create-admin.ts"
+    "create-admin": "tsx src/scripts/create-admin.ts",
+    "seed": "tsx src/scripts/seed-demo-data.ts",
+    "seed:reset": "tsx src/scripts/seed-demo-data.ts --reset"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

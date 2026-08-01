@@ -17,6 +17,13 @@ const createBody = z.object({
   message: z.string().min(2).max(2000),
 });
 
+const publicContactBody = z.object({
+  name: z.string().trim().min(2).max(120),
+  email: z.string().trim().email().max(254),
+  subject: z.string().trim().min(5).max(200),
+  message: z.string().trim().min(2).max(2000),
+});
+
 const listQuery = paginationSchema.extend({
   status: z.enum(TICKET_STATUSES).optional(),
   category: z.enum(TICKET_CATEGORIES).optional(),
@@ -62,6 +69,30 @@ supportRouter.post(
 );
 
 /**
+ * Public contact form. Repeat contacts are deliberately promoted to urgent
+ * so the support queue brings returning visitors to the front.
+ */
+supportRouter.post(
+  "/contact",
+  validate({ body: publicContactBody }),
+  catchAsync(async (req, res) => {
+    const { name, email, subject, message } = req.body as z.infer<typeof publicContactBody>;
+    const requesterEmail = email.toLowerCase();
+    const hasContactedBefore = await SupportTicket.exists({ requesterEmail });
+    const ticket = await SupportTicket.create({
+      subject,
+      category: "Other",
+      priority: hasContactedBefore ? "urgent" : "medium",
+      repeatContact: Boolean(hasContactedBefore),
+      requesterName: name,
+      requesterEmail,
+      messages: [{ text: message }],
+    });
+    return sendSuccess(res, { id: ticket.id, priority: ticket.priority, repeatContact: ticket.repeatContact }, "Message received", 201);
+  }),
+);
+
+/**
  * @openapi
  * /support/tickets:
  *   get:
@@ -90,7 +121,7 @@ supportRouter.get(
     const [items, total] = await Promise.all([
       SupportTicket.find(filter)
         .populate("requester", "name email role")
-        .sort({ updatedAt: -1 })
+        .sort({ repeatContact: -1, updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
@@ -121,7 +152,7 @@ supportRouter.post(
 
     // Authorization: Must be admin/agent or the ticket creator
     const isAdminRole = req.user!.role === "admin" || req.user!.role === "super_admin";
-    if (!isAdminRole && ticket.requester.toString() !== req.user!.id) {
+    if (!isAdminRole && ticket.requester?.toString() !== req.user!.id) {
       throw ApiError.forbidden("Access denied");
     }
 
