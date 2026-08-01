@@ -121,6 +121,7 @@ supportRouter.get(
     const [items, total] = await Promise.all([
       SupportTicket.find(filter)
         .populate("requester", "name email role")
+        .populate("messages.sender", "name")
         .sort({ repeatContact: -1, updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -163,6 +164,7 @@ supportRouter.post(
     });
     ticket.status = isAdminRole ? "pending" : "open"; // if user replies, re-opens; if admin replies, marks pending action
     await ticket.save();
+    await ticket.populate("messages.sender", "name");
 
     return sendSuccess(res, ticket, "Message added successfully");
   }),

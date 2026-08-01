@@ -56,6 +56,21 @@ export type ApiTechnician = {
   user?: { name?: string; avatarUrl?: string; city?: string };
 };
 
+export type ApiSupportTicket = {
+  _id: string;
+  subject: string;
+  category: "Billing" | "Booking" | "Technician" | "App Issue" | "Other";
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "open" | "pending" | "resolved" | "closed";
+  agent?: string;
+  requester?: { name?: string; email?: string };
+  requesterName?: string;
+  requesterEmail?: string;
+  repeatContact?: boolean;
+  messages: Array<{ text: string; createdAt: string; sender?: { name?: string } }>;
+  updatedAt: string;
+};
+
 export type PublicSiteContent = {
   testimonials?: Array<{ id: number; name: string; role: string; avatar: string; rating: number; quote: string }>;
   trustedCompanies?: string[];
@@ -280,6 +295,11 @@ export const api = {
       apiRequest<{ id: string }>("/support/tickets", { method: "POST", body }),
     contact: (body: { name: string; email: string; subject: string; message: string }) =>
       apiRequest<{ id: string; priority: string; repeatContact: boolean }>("/support/contact", { method: "POST", body, auth: false }),
+    listTickets: () => apiRequest<ApiSupportTicket[]>("/support/tickets?limit=100"),
+    reply: (id: string, text: string) =>
+      apiRequest<ApiSupportTicket>(`/support/tickets/${id}/messages`, { method: "POST", body: { text } }),
+    updateTicket: (id: string, body: { status?: ApiSupportTicket["status"]; priority?: ApiSupportTicket["priority"] }) =>
+      apiRequest<ApiSupportTicket>(`/support/tickets/${id}`, { method: "PATCH", body }),
   },
   admin: {
     dashboard: () => apiRequest("/admin/dashboard"),
