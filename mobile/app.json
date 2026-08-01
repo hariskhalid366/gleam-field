@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "ServicePro Technician",
+    "slug": "servicepro-technician",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "servicepro",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#2563EB"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.servicepro.technician" },
+    "android": { "package": "com.servicepro.technician" },
+    "web": { "bundler": "metro" }
+  }
+}
