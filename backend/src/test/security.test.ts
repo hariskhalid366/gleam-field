@@ -242,6 +242,22 @@ describe("ServicePro API Security & Integration Tests", () => {
       assert.strictEqual(res.body.data.messages.length, 2);
       assert.strictEqual(res.body.data.messages[1].text, "Checking this. Let me verify with our gateway.");
     });
+
+    test("POST /support/contact should accept visitors and prioritize repeat contacts", async () => {
+      const contact = {
+        name: "Jordan Visitor",
+        email: "jordan.visitor@example.com",
+        subject: "Need help with a service",
+        message: "Please contact me about an upcoming appointment.",
+      };
+      const first = await request(app).post("/api/v1/support/contact").send(contact).expect(201);
+      const second = await request(app).post("/api/v1/support/contact").send(contact).expect(201);
+
+      assert.strictEqual(first.body.data.repeatContact, false);
+      assert.strictEqual(first.body.data.priority, "medium");
+      assert.strictEqual(second.body.data.repeatContact, true);
+      assert.strictEqual(second.body.data.priority, "urgent");
+    });
   });
 
   describe("5. Admin Platform Operations (Users, Payments, Stats)", () => {
