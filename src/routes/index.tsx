@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Star, ShieldCheck, MapPin, Lock, HeadphonesIcon,
@@ -9,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { services, testimonials, pricingPlans, faqs, trustedCompanies, technicians } from "@/data/servicepro";
+import { services, testimonials, pricingPlans, faqs, trustedCompanies, technicians, type Technician } from "@/data/servicepro";
 import heroImg from "@/assets/hero-technicians.png";
+import { api, apiConfigured, type ApiTechnician, type PublicSiteContent } from "@/lib/api";
+import { toDisplayService } from "@/lib/service-display";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,19 +27,66 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
+const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+function toHomepageTechnician(technician: ApiTechnician): Technician {
+  const name = technician.user?.name ?? "ServicePro technician";
+  return {
+    id: technician._id,
+    slug: slugify(name),
+    name,
+    avatar: technician.user?.avatarUrl ?? "",
+    rating: technician.rating,
+    reviews: 0,
+    experienceYears: technician.experienceYears,
+    completedJobs: technician.jobsCompleted,
+    specializations: technician.services,
+    languages: [],
+    city: technician.city ?? technician.user?.city ?? "",
+    available: technician.isAvailable,
+    hourlyRate: technician.hourlyRate,
+    bio: "",
+    certificates: [],
+  };
+}
+
 function LandingPage() {
+  const { data } = useQuery({
+    queryKey: ["homepage"],
+    enabled: apiConfigured,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const [liveServices, liveTechnicians] = await Promise.all([
+        api.services.list().catch(() => []),
+        api.technicians.list("?limit=3").catch(() => []),
+      ]);
+      // Content is introduced with the seed; catalog data should still be live
+      // when an existing environment has not been seeded yet.
+      const content = await api.content.publicSite().catch(() => ({ data: {} as PublicSiteContent }));
+      return { liveServices, liveTechnicians, content: content.data };
+    },
+  });
+  const homepage = {
+    services: data?.liveServices.length ? data.liveServices.map(toDisplayService) : services,
+    technicians: data?.liveTechnicians.length ? data.liveTechnicians.map(toHomepageTechnician) : technicians,
+    testimonials: data?.content.testimonials?.length ? data.content.testimonials : testimonials,
+    trustedCompanies: data?.content.trustedCompanies?.length ? data.content.trustedCompanies : trustedCompanies,
+    pricingPlans: data?.content.pricingPlans?.length ? data.content.pricingPlans : pricingPlans,
+    faqs: data?.content.faqs?.length ? data.content.faqs : faqs,
+  };
+
   return (
     <>
       <Hero />
-      <TrustedStrip />
-      <Services />
+      <TrustedStrip companies={homepage.trustedCompanies} />
+      <Services items={homepage.services} />
       <WhyUs />
       <HowItWorks />
-      <FeaturedTechs />
-      <Testimonials />
-      <Pricing />
+      <FeaturedTechs items={homepage.technicians} />
+      <Testimonials items={homepage.testimonials} />
+      <Pricing plans={homepage.pricingPlans} />
       <EmergencyBanner />
-      <FAQ />
+      <FAQ items={homepage.faqs} />
     </>
   );
 }
@@ -156,7 +206,7 @@ function FloatingCard({ children }: { children: React.ReactNode }) {
 
 /* ---------- TRUSTED ---------- */
 
-function TrustedStrip() {
+function TrustedStrip({ companies }: { companies: string[] }) {
   return (
     <section className="border-y border-border bg-white/60">
       <div className="mx-auto max-w-7xl px-4 py-10">
@@ -164,7 +214,7 @@ function TrustedStrip() {
           Trusted by leading property managers & enterprises
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          {trustedCompanies.map((c) => (
+          {companies.map((c) => (
             <span key={c} className="text-lg font-semibold tracking-tight text-muted-foreground/70 grayscale">
               {c}
             </span>
@@ -177,7 +227,7 @@ function TrustedStrip() {
 
 /* ---------- SERVICES ---------- */
 
-function Services() {
+function Services({ items }: { items: typeof services }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
       <SectionHeader
@@ -186,7 +236,7 @@ function Services() {
         description="Browse categorized services with transparent starting prices and real ETAs."
       />
       <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {services.slice(0, 8).map((s) => (
+        {items.slice(0, 8).map((s) => (
           <div key={s.slug} className="card-elevated card-elevated-hover group flex flex-col p-6">
             <div className="mb-4 grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-br from-primary-soft to-white">
               <img src={s.icon} alt="" width={80} height={80} className="h-16 w-16 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-3" loading="lazy" />
@@ -285,7 +335,7 @@ function HowItWorks() {
 
 /* ---------- FEATURED TECHS ---------- */
 
-function FeaturedTechs() {
+function FeaturedTechs({ items }: { items: typeof technicians }) {
   return (
     <section className="bg-surface border-y border-border">
       <div className="mx-auto max-w-7xl px-4 py-24">
@@ -294,7 +344,7 @@ function FeaturedTechs() {
           <Button asChild variant="outline"><Link to="/technicians">Browse all</Link></Button>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {technicians.slice(0, 3).map((t) => (
+          {items.slice(0, 3).map((t) => (
             <Link
               key={t.id}
               to="/technicians/$slug"
@@ -352,13 +402,13 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 
 /* ---------- TESTIMONIALS ---------- */
 
-function Testimonials() {
+function Testimonials({ items }: { items: typeof testimonials }) {
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % testimonials.length), 6000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 6000);
     return () => clearInterval(t);
-  }, []);
-  const t = testimonials[idx];
+  }, [items.length]);
+  const t = items[idx] ?? items[0]!;
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
       <SectionHeader eyebrow="Customers" title="Loved by homeowners and enterprises alike." />
@@ -377,7 +427,7 @@ function Testimonials() {
             </div>
           </div>
           <div className="mt-6 flex gap-2">
-            {testimonials.map((_, i) => (
+            {items.map((_, i) => (
               <button
                 key={i}
                 aria-label={`Testimonial ${i + 1}`}
@@ -388,7 +438,7 @@ function Testimonials() {
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {testimonials.slice(0, 4).map((tt) => (
+          {items.slice(0, 4).map((tt) => (
             <div key={tt.id} className="card-elevated card-elevated-hover p-6">
               <div className="flex items-center gap-2">
                 {Array.from({ length: tt.rating }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}
@@ -405,13 +455,13 @@ function Testimonials() {
 
 /* ---------- PRICING ---------- */
 
-function Pricing() {
+function Pricing({ plans }: { plans: typeof pricingPlans }) {
   return (
     <section className="bg-surface border-y border-border">
       <div className="mx-auto max-w-7xl px-4 py-24">
         <SectionHeader eyebrow="Pricing" title="Simple, transparent, no surprises." />
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          {pricingPlans.map((p) => (
+          {plans.map((p) => (
             <div
               key={p.id}
               className={cn(
@@ -480,12 +530,12 @@ function EmergencyBanner() {
 
 /* ---------- FAQ ---------- */
 
-function FAQ() {
+function FAQ({ items }: { items: typeof faqs }) {
   return (
     <section className="mx-auto max-w-4xl px-4 py-24">
       <SectionHeader eyebrow="FAQ" title="Frequently asked." />
       <Accordion type="single" collapsible className="mt-10 space-y-3">
-        {faqs.map((f, i) => (
+        {items.map((f, i) => (
           <AccordionItem
             key={i}
             value={`i-${i}`}

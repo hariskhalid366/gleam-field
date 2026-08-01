@@ -4,7 +4,7 @@ import { Lock, Mail, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { api, apiConfigured, tokenStore, userStore } from "@/lib/api";
+import { api, apiConfigured, startSession, tokenStore, userStore } from "@/lib/api";
 
 export const Route = createFileRoute("/admin-login")({
   head: () => ({
@@ -34,8 +34,7 @@ function AdminLogin() {
         if (res.user && !["admin", "super_admin"].includes(res.user.role)) {
           throw new Error("This account does not have admin access.");
         }
-        tokenStore.set(res.accessToken);
-        if (res.user) userStore.set(res.user);
+        startSession(res);
         toast.success("Signed in");
       } else {
         tokenStore.set("demo-session");

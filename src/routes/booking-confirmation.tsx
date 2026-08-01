@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import badge from "@/assets/success-badge.png";
 
-type ConfirmationSearch = { ref?: string; service?: string };
+type ConfirmationSearch = { ref?: string; id?: string; service?: string };
 
 export const Route = createFileRoute("/booking-confirmation")({
   validateSearch: (search: Record<string, unknown>): ConfirmationSearch => ({
     ref: typeof search.ref === "string" ? search.ref : undefined,
+    id: typeof search.id === "string" ? search.id : undefined,
     service: typeof search.service === "string" ? search.service : undefined,
   }),
   head: () => ({
@@ -22,8 +23,8 @@ export const Route = createFileRoute("/booking-confirmation")({
 });
 
 function Confirmation() {
-  const { ref, service } = Route.useSearch();
-  const id = ref ?? "SP-DEMO01";
+  const { ref, id, service } = Route.useSearch();
+  const displayRef = ref ?? "SP-DEMO01";
   return (
     <div className="mx-auto grid max-w-3xl place-items-center px-4 py-24 text-center">
       <img src={badge} alt="" className="h-40 w-40 drop-shadow-[0_30px_40px_rgba(16,185,129,0.35)] animate-scale-in" />
@@ -36,14 +37,14 @@ function Confirmation() {
       </p>
 
       <div className="mt-10 grid w-full gap-4 sm:grid-cols-3">
-        <Info label="Booking ID" value={id} />
+        <Info label="Booking ID" value={displayRef} />
         <Info label="Service" value={service || "Field service"} />
         <Info label="ETA" value="42 min" />
       </div>
 
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <Button asChild size="lg" className="btn-press shadow-[var(--shadow-glow)]">
-          <Link to="/track" search={{ ref: id }}>Track Booking</Link>
+          <Link to="/track" search={{ ref: displayRef, id }}>Track Booking</Link>
         </Button>
         <Button asChild size="lg" variant="outline"><Link to="/">Return Home</Link></Button>
       </div>

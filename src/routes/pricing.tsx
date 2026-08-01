@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Check, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { pricingPlans } from "@/data/servicepro";
+import { services as offlineServices } from "@/data/servicepro";
 import { cn } from "@/lib/utils";
+import { api, apiConfigured } from "@/lib/api";
+import { toDisplayService } from "@/lib/service-display";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -17,6 +20,18 @@ export const Route = createFileRoute("/pricing")({
 });
 
 function PricingPage() {
+  const { data: services, isLoading, isError } = useQuery({
+    queryKey: ["services"],
+    enabled: apiConfigured,
+    staleTime: 60_000,
+    queryFn: () => api.services.list(),
+  });
+  const listings = services
+    ? services.map((service) => ({ ...toDisplayService(service), included: service.included ?? [] }))
+    : apiConfigured
+      ? []
+      : offlineServices.map((service) => ({ ...service, included: [] }));
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-16">
       <div className="text-center">
@@ -25,33 +40,35 @@ function PricingPage() {
           Transparent, <span className="font-semibold">no surprises.</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          Pay per visit or lock in an annual plan. Cancel anytime.
+          Starting prices come directly from our live service catalog. Your final estimate is confirmed before work begins.
         </p>
       </div>
 
       <div className="mt-14 grid gap-6 lg:grid-cols-3">
-        {pricingPlans.map((p) => (
-          <div key={p.id} className={cn(
+        {isLoading && <div className="col-span-full flex justify-center py-16 text-muted-foreground"><LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> Loading live pricing…</div>}
+        {isError && <div className="col-span-full card-elevated p-8 text-center"><p className="font-semibold">Pricing is temporarily unavailable</p><p className="mt-2 text-sm text-muted-foreground">Please try again in a moment.</p></div>}
+        {!isLoading && !isError && listings.map((p) => (
+          <div key={p.slug} className={cn(
             "card-elevated relative flex flex-col p-8",
-            p.recommended && "scale-[1.02] border-primary/30 shadow-[var(--shadow-floating)] lg:-translate-y-3",
+            "border-primary/10",
           )}>
-            {p.recommended && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-[var(--shadow-glow)]">Recommended</span>
-            )}
-            <h3 className="text-lg font-semibold">{p.name}</h3>
+            <p className="eyebrow">{p.category ?? "Service"}</p>
+            <h3 className="mt-2 text-lg font-semibold">{p.title}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>
             <div className="mt-6 flex items-baseline gap-1">
-              <span className="text-5xl font-bold tracking-tight">${p.price}</span>
-              <span className="text-sm text-muted-foreground">/{p.cadence.replace("per ", "")}</span>
+              <span className="text-5xl font-bold tracking-tight">${p.startingPrice}</span>
+              <span className="text-sm text-muted-foreground">starting price</span>
             </div>
             <ul className="mt-6 space-y-3 text-sm">
-              {p.features.map((f) => <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />{f}</li>)}
+              <li className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />Estimated duration: {p.eta}</li>
+              {(p.included ?? []).slice(0, 3).map((item) => <li key={item} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />{item}</li>)}
             </ul>
-            <Button asChild className="mt-8" variant={p.recommended ? "default" : "outline"}>
-              <Link to="/book">Get started</Link>
+            <Button asChild className="mt-8">
+              <Link to="/book" search={{ service: p.slug }}>Book this service</Link>
             </Button>
           </div>
         ))}
+        {!isLoading && !isError && listings.length === 0 && <div className="col-span-full card-elevated p-8 text-center text-muted-foreground">No services are currently listed.</div>}
       </div>
     </div>
   );

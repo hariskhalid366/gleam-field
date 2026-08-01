@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteLayout } from "../components/site/SiteLayout";
+import { Toaster } from "../components/ui/sonner";
+import { api, apiConfigured, isAuthenticated } from "../lib/api";
 
 function NotFoundComponent() {
   return (
@@ -116,11 +118,19 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (!apiConfigured || !isAuthenticated()) return;
+    // Access tokens last 15 minutes; refresh before expiry using the httpOnly cookie.
+    const refresh = window.setInterval(() => { void api.auth.refresh(); }, 12 * 60 * 1000);
+    return () => window.clearInterval(refresh);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SiteLayout>
         <Outlet />
       </SiteLayout>
+      <Toaster position="top-right" closeButton richColors />
     </QueryClientProvider>
   );
 }

@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { services } from "@/data/servicepro";
+import { api, apiConfigured } from "@/lib/api";
+import { toDisplayService } from "@/lib/service-display";
 
 export const Route = createFileRoute("/services/")({
   head: () => ({
@@ -21,8 +24,15 @@ export const Route = createFileRoute("/services/")({
 function ServicesPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
-  const cats = ["All", ...Array.from(new Set(services.map((s) => s.category)))];
-  const filtered = services.filter(
+  const { data: liveServices } = useQuery({
+    queryKey: ["services"],
+    enabled: apiConfigured,
+    staleTime: 60_000,
+    queryFn: () => api.services.list().catch(() => []),
+  });
+  const catalog = liveServices?.length ? liveServices.map(toDisplayService) : services;
+  const cats = ["All", ...Array.from(new Set(catalog.map((s) => s.category)))];
+  const filtered = catalog.filter(
     (s) =>
       (cat === "All" || s.category === cat) &&
       (q === "" || s.title.toLowerCase().includes(q.toLowerCase())),
@@ -72,7 +82,7 @@ function ServicesPage() {
               </div>
               <div className="mt-5 flex gap-2">
                 <Button asChild size="sm" variant="outline" className="flex-1"><Link to="/services/$slug" params={{ slug: s.slug }}>Details</Link></Button>
-                <Button asChild size="sm" className="flex-1"><Link to="/book">Book</Link></Button>
+                <Button asChild size="sm" className="flex-1"><Link to="/book" search={{ service: s.slug }}>Book</Link></Button>
               </div>
             </div>
           ))}

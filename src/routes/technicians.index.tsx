@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Star, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Slider } from "@/components/ui/slider";
 import { technicians } from "@/data/servicepro";
 import { cn } from "@/lib/utils";
+import { api, apiConfigured, type ApiTechnician } from "@/lib/api";
 
 export const Route = createFileRoute("/technicians/")({
   head: () => ({
@@ -25,7 +27,18 @@ function TechniciansPage() {
   const [q, setQ] = useState("");
   const [minRating, setMinRating] = useState(0);
   const [onlyAvailable, setOnlyAvailable] = useState(false);
-  const filtered = technicians.filter((t) =>
+  const params = new URLSearchParams({ limit: "100" });
+  if (q) params.set("q", q);
+  if (minRating) params.set("minRating", String(minRating));
+  if (onlyAvailable) params.set("available", "true");
+  const { data: liveTechnicians } = useQuery({
+    queryKey: ["technicians", q, minRating, onlyAvailable],
+    enabled: apiConfigured,
+    staleTime: 30_000,
+    queryFn: () => api.technicians.list(`?${params.toString()}`),
+  });
+  const items = apiConfigured ? (liveTechnicians ?? []).map(toDisplayTechnician) : technicians;
+  const filtered = items.filter((t) =>
     (q === "" || t.name.toLowerCase().includes(q.toLowerCase()) || t.specializations.join(" ").toLowerCase().includes(q.toLowerCase())) &&
     t.rating >= minRating && (!onlyAvailable || t.available)
   );
@@ -67,7 +80,7 @@ function TechniciansPage() {
           ) : (
             <div className="grid gap-5 sm:grid-cols-2">
               {filtered.map((t) => (
-                <Link key={t.id} to="/technicians/$slug" params={{ slug: t.slug }} className="card-elevated card-elevated-hover flex gap-4 p-5">
+                <Link key={t.id} to="/technicians/$slug" params={{ slug: t.id }} className="card-elevated card-elevated-hover flex gap-4 p-5">
                   <Avatar className="h-16 w-16 shrink-0 ring-2 ring-white shadow-[var(--shadow-elevated)]">
                     <AvatarImage src={t.avatar} alt={t.name} />
                     <AvatarFallback>{t.name[0]}</AvatarFallback>
@@ -100,4 +113,24 @@ function TechniciansPage() {
       </div>
     </div>
   );
+}
+
+function toDisplayTechnician(technician: ApiTechnician) {
+  return {
+    id: technician._id,
+    slug: technician._id,
+    name: technician.user?.name ?? "ServicePro technician",
+    avatar: technician.user?.avatarUrl ?? "",
+    rating: technician.rating,
+    reviews: 0,
+    experienceYears: technician.experienceYears,
+    completedJobs: technician.jobsCompleted,
+    specializations: technician.services,
+    languages: [],
+    city: technician.city,
+    available: technician.isAvailable,
+    hourlyRate: technician.hourlyRate,
+    bio: "",
+    certificates: [],
+  };
 }
