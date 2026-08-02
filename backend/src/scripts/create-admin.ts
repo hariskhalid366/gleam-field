@@ -5,8 +5,10 @@ import { logger } from "../config/logger.js";
 async function createAdmin() {
   await connectDatabase();
 
-  const adminEmail = "admin@servicepro.com";
-  const adminPassword = "AdminPassword123!";
+  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@servicepro.com").toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "AdminPassword123!";
+  const adminName = process.env.ADMIN_NAME ?? "Business Administrator";
+  if (adminPassword.length < 10) throw new Error("ADMIN_PASSWORD must be at least 10 characters long");
 
   const existing = await User.findOne({ email: adminEmail });
   if (existing) {
@@ -16,7 +18,7 @@ async function createAdmin() {
   }
 
   await User.create({
-    name: "Business Administrator",
+    name: adminName,
     email: adminEmail,
     password: adminPassword,
     role: "admin",

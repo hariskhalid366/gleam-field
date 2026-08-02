@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, CalendarCheck, Wrench, ShieldCheck, Users, Layers, Calendar, CreditCard,
@@ -6,7 +7,7 @@ import {
   PanelLeftClose, PanelLeftOpen, Plus, Zap, ChevronDown, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api, apiConfigured, tokenStore } from "@/lib/api";
+import { api, apiAssetUrl, apiConfigured, tokenStore, userStore } from "@/lib/api";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -20,10 +21,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import {
-  adminBookings, adminCustomers, adminNotifications, adminTechnicians, serviceCatalog,
-  pendingVerificationCount,
-} from "@/data/admin";
 import { StatusPill } from "./kit";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; exact?: boolean; badge?: number };
@@ -32,7 +29,7 @@ const nav: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { to: "/admin/technicians", label: "Technicians", icon: Wrench },
-  { to: "/admin/verification", label: "Verification Queue", icon: ShieldCheck, badge: pendingVerificationCount },
+  { to: "/admin/verification", label: "Verification Queue", icon: ShieldCheck },
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/services", label: "Services", icon: Layers },
   { to: "/admin/calendar", label: "Calendar", icon: Calendar },
@@ -50,9 +47,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [cmd, setCmd] = useState(false);
-  const [read, setRead] = useState<string[]>([]);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const client = useQueryClient();
+  const { data: profile } = useQuery({ queryKey: ["auth-me"], queryFn: api.auth.me, initialData: () => { const user = userStore.get(); return user ? { user } : undefined; } });
+  const notifications = useQuery({ queryKey: ["admin-notifications", "shell"], queryFn: () => api.notifications.list("?limit=20"), enabled: apiConfigured, refetchInterval: 60_000 });
+  const bookings = useQuery({ queryKey: ["admin-bookings", "shell"], queryFn: () => api.admin.bookings("?limit=5"), enabled: apiConfigured, staleTime: 60_000 });
+  const technicians = useQuery({ queryKey: ["admin-technicians", "shell"], queryFn: () => api.technicians.adminList("?limit=5"), enabled: apiConfigured, staleTime: 60_000 });
+  const customers = useQuery({ queryKey: ["admin-customers", "shell"], queryFn: () => api.users.list("?role=customer&limit=5"), enabled: apiConfigured, staleTime: 60_000 });
+  const services = useQuery({ queryKey: ["admin-services", "shell"], queryFn: api.services.listAdmin, enabled: apiConfigured, staleTime: 60_000 });
+  const markRead = useMutation({
+    mutationFn: (id: string) => api.notifications.markRead(id, true),
+    onSuccess: () => client.invalidateQueries({ queryKey: ["admin-notifications"] }),
+    onError: () => toast.error("Could not mark notification as read"),
+  });
+  const admin = profile?.user;
+  const notificationItems = notifications.data ?? [];
+  const unread = notificationItems.filter((notification) => !notification.read);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -65,11 +76,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const unread = adminNotifications.filter((n) => !n.read && !read.includes(n.id));
 
   const go = (to: string) => {
     setCmd(false);
     navigate({ to });
+  };
+  const logout = async () => {
+    if (apiConfigured) await api.auth.logout().catch(() => undefined);
+    tokenStore.clear();
+    navigate({ to: "/admin-login", replace: true });
   };
 
   return (
@@ -136,11 +151,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div className="border-t border-border p-2">
             <button
               type="button"
-              onClick={async () => {
-                if (apiConfigured) await api.auth.logout().catch(() => undefined);
-                tokenStore.clear();
-                navigate({ to: "/admin-login", replace: true });
-              }}
+              onClick={logout}
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive",
                 collapsed && "justify-center px-0",
@@ -186,33 +197,28 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
               <Button variant="ghost" size="icon" className="relative" onClick={() => setDrawer(true)} aria-label="Notifications">
                 <Bell className="h-[18px] w-[18px]" />
-                {unread.length > 0 && (
-                  <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                    {unread.length}
-                  </span>
-                )}
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 rounded-xl p-1 pr-2 transition-colors hover:bg-muted">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="https://i.pravatar.cc/80?u=dana" alt="Dana Whitmore" />
-                      <AvatarFallback>DW</AvatarFallback>
+                      <AvatarImage src={apiAssetUrl(admin?.avatarUrl)} alt={admin?.name ?? "Admin"} />
+                      <AvatarFallback>{admin?.name?.slice(0, 2).toUpperCase() ?? "AD"}</AvatarFallback>
                     </Avatar>
                     <span className="hidden text-left text-xs leading-tight lg:block">
-                      <span className="block font-semibold">Dana Whitmore</span>
-                      <span className="block text-muted-foreground">Owner</span>
+                      <span className="block font-semibold">{admin?.name ?? "Administrator"}</span>
+                      <span className="block text-muted-foreground">{admin?.role?.replace("_", " ") ?? "Administrator"}</span>
                     </span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuLabel>dana@servicepro.io</DropdownMenuLabel>
+                  <DropdownMenuLabel>{admin?.email ?? "Administrator"}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => go("/admin/profile")}>Profile</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => go("/admin/settings")}>Settings</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => go("/admin-login")}>
+                  <DropdownMenuItem className="text-destructive" onClick={logout}>
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -251,25 +257,26 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
               </TabsList>
               {(["unread", "all"] as const).map((tab) => {
-                const list = tab === "unread" ? unread : adminNotifications;
+                const list = tab === "unread" ? unread : notificationItems;
                 return (
                   <TabsContent key={tab} value={tab} className="max-h-[70vh] space-y-2 overflow-y-auto py-4">
                     {list.length === 0 && (
                       <p className="py-10 text-center text-sm text-muted-foreground">You're all caught up.</p>
                     )}
                     {list.map((n) => (
-                      <div key={n.id} className="rounded-xl border border-border p-3 transition-colors hover:bg-muted/50">
+                      <div key={n._id} className="rounded-xl border border-border p-3 transition-colors hover:bg-muted/50">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm font-semibold">{n.title}</p>
-                          <span className="shrink-0 text-[11px] text-muted-foreground">{n.time}</span>
+                          <span className="shrink-0 text-[11px] text-muted-foreground">{new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(n.createdAt))}</span>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground">{n.body}</p>
                         <div className="mt-2 flex items-center justify-between">
                           <StatusPill label={n.category} tone="slate" />
-                          {!n.read && !read.includes(n.id) && (
+                          {!n.read && (
                             <button
+                              disabled={markRead.isPending}
                               className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
-                              onClick={() => setRead((r) => [...r, n.id])}
+                              onClick={() => markRead.mutate(n._id)}
                             >
                               <Check className="h-3 w-3" /> Mark read
                             </button>
@@ -290,29 +297,29 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Bookings">
-              {adminBookings.slice(0, 5).map((b) => (
-                <CommandItem key={b.id} onSelect={() => go("/admin/bookings")}>
-                  <CalendarCheck className="mr-2 h-4 w-4" /> {b.id} · {b.service} · {b.customer}
+              {(bookings.data ?? []).map((b: any) => (
+                <CommandItem key={b._id} onSelect={() => go(`/admin/bookings/${b._id}`)}>
+                  <CalendarCheck className="mr-2 h-4 w-4" /> {b.reference} · {b.service?.name ?? "Service"} · {b.customer?.name ?? "Customer"}
                 </CommandItem>
               ))}
             </CommandGroup>
             <CommandGroup heading="Technicians">
-              {adminTechnicians.slice(0, 5).map((t) => (
-                <CommandItem key={t.id} onSelect={() => go("/admin/technicians")}>
-                  <Wrench className="mr-2 h-4 w-4" /> {t.name} · {t.city}
+              {(technicians.data ?? []).map((t) => (
+                <CommandItem key={t._id} onSelect={() => go("/admin/technicians")}>
+                  <Wrench className="mr-2 h-4 w-4" /> {t.user?.name ?? "Unnamed technician"} · {t.city}
                 </CommandItem>
               ))}
             </CommandGroup>
             <CommandGroup heading="Customers">
-              {adminCustomers.slice(0, 4).map((c) => (
-                <CommandItem key={c.id} onSelect={() => go("/admin/customers")}>
+              {(customers.data ?? []).map((c) => (
+                <CommandItem key={c._id} onSelect={() => go("/admin/customers")}>
                   <Users className="mr-2 h-4 w-4" /> {c.name} · {c.city}
                 </CommandItem>
               ))}
             </CommandGroup>
             <CommandGroup heading="Services">
-              {serviceCatalog.slice(0, 4).map((s) => (
-                <CommandItem key={s.id} onSelect={() => go("/admin/services")}>
+              {(services.data ?? []).slice(0, 4).map((s) => (
+                <CommandItem key={s._id} onSelect={() => go("/admin/services")}>
                   <Layers className="mr-2 h-4 w-4" /> {s.name}
                 </CommandItem>
               ))}

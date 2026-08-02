@@ -31,6 +31,13 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: password,
 });
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  phone: z.string().trim().max(40).optional(),
+  city: z.string().trim().max(80).optional(),
+  // Files uploaded by this API use a relative /uploads path; external HTTPS avatars remain valid too.
+  avatarUrl: z.string().max(500).refine((value) => value.startsWith("/uploads/") || /^https?:\/\//i.test(value), "Avatar must be an uploaded file or a valid URL").optional(),
+});
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

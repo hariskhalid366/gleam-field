@@ -114,3 +114,12 @@ export async function me(userId: string) {
   const technician = user.role === "technician" ? await Technician.findOne({ user: user._id }) : null;
   return { user: user.toJSON(), technician };
 }
+
+export async function updateProfile(userId: string, input: { name: string; phone?: string; city?: string; avatarUrl?: string }) {
+  const user = await User.findByIdAndUpdate(userId, input, { new: true, runValidators: true });
+  if (!user) throw ApiError.notFound("User not found");
+  return user.toJSON();
+}
+
+export async function sessions(userId: string) { return RefreshToken.find({ user: userId, revokedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 }).select("userAgent ip createdAt expiresAt").lean(); }
+export async function revokeSession(userId: string, sessionId: string) { const item = await RefreshToken.findOneAndUpdate({ _id: sessionId, user: userId, revokedAt: { $exists: false } }, { revokedAt: new Date() }, { new: true }); if (!item) throw ApiError.notFound("Active session not found"); }

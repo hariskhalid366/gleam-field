@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import type { Tone } from "@/data/admin";
+export type Tone = "blue" | "emerald" | "amber" | "red" | "slate" | "violet" | "indigo" | "cyan";
 
 export const toneClass: Record<Tone, string> = {
   blue: "bg-primary/10 text-primary ring-primary/20",

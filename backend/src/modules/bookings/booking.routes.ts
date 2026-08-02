@@ -13,6 +13,7 @@ import { ApiError } from "../../utils/ApiError.js";
 import { idParamSchema, objectId, paginationSchema } from "../common/query.validation.js";
 import { emitToRoom } from "../../sockets/index.js";
 import { notifyAdmins } from "../notifications/notifications.service.js";
+import { Content } from "../../models/content.model.js";
 
 export const bookingRouter = Router();
 
@@ -70,6 +71,11 @@ bookingRouter.post(
   validate({ body: createBody }),
   catchAsync(async (req, res) => {
     const body = req.body as z.infer<typeof createBody>;
+    if (body.isEmergency) {
+      const settings = await Content.findOne({ key: "admin.settings" }).select("data").lean();
+      const coverage = (settings?.data as { coverage?: { emergencyDispatch?: boolean } } | undefined)?.coverage;
+      if (coverage?.emergencyDispatch === false) throw ApiError.badRequest("Emergency dispatch is currently unavailable");
+    }
     const service = await Service.findById(body.service);
     if (!service || !service.isActive) throw ApiError.badRequest("Service is unavailable");
 

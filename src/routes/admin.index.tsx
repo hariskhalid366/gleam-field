@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GlossyIcon, PageHeader, Panel, StatusPill, money, num } from "@/components/admin/kit";
 import { api } from "@/lib/api";
-import type { Tone } from "@/data/admin";
+import type { Tone } from "@/components/admin/kit";
 
 export const Route = createFileRoute("/admin/")({ head: () => ({ meta: [{ title: "Dashboard — ServicePro Admin" }, { name: "robots", content: "noindex" }] }), component: Dashboard });
 const colors = ["oklch(0.55 0.22 264)", "oklch(0.68 0.17 155)", "oklch(0.78 0.16 70)", "oklch(0.65 0.12 300)", "oklch(0.62 0.13 215)", "oklch(0.75 0.02 255)"];

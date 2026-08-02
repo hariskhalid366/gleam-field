@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { PageHeader, Panel, StatusPill, money } from "@/components/admin/kit";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import type { Tone } from "@/data/admin";
+import type { Tone } from "@/components/admin/kit";
 
 export const Route = createFileRoute("/admin/bookings/$bookingId")({ head: () => ({ meta: [{ title: "Booking detail — ServicePro Admin" }, { name: "robots", content: "noindex" }] }), component: BookingDetail });
 const statuses = ["pending", "assigned", "accepted", "travelling", "in_progress", "completed", "cancelled", "disputed"];

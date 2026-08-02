@@ -161,6 +161,10 @@
     color: var(--color-foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
   }
+  /* Keep forms usable: users must still be able to select, edit and copy their own input. */
+  input, textarea, [contenteditable="true"] { user-select: text; -webkit-user-select: text; }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
 }

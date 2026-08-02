@@ -17,8 +17,8 @@ export const Route = createFileRoute("/faq")({
 });
 
 function FAQPage() {
-  const { data } = useQuery({ queryKey: ["public-faqs"], enabled: apiConfigured, staleTime: 60_000, queryFn: () => api.content.publicSite().catch(() => ({ data: {} as PublicSiteContent })) });
-  const items = data?.data.faqs?.length ? data.data.faqs : faqs;
+  const { data, isError } = useQuery({ queryKey: ["public-faqs"], enabled: apiConfigured, staleTime: 60_000, queryFn: api.content.publicSite });
+  const items = data?.data.faqs ?? (apiConfigured ? [] : faqs);
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <p className="eyebrow">FAQ</p>
@@ -27,6 +27,8 @@ function FAQPage() {
       </h1>
       <p className="mt-4 text-muted-foreground">Can't find what you're looking for? Contact support — we're here 24/7.</p>
 
+      {isError && <p role="alert" className="mt-8 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">Frequently asked questions are temporarily unavailable. Please try again shortly.</p>}
+      {!isError && !items.length && <p className="mt-8 rounded-xl border border-border p-4 text-sm text-muted-foreground">No frequently asked questions have been published yet.</p>}
       <Accordion type="single" collapsible className="mt-10 space-y-3">
         {items.map((f, i) => (
           <AccordionItem key={i} value={`i-${i}`} className="card-elevated overflow-hidden border-none px-5 [&[data-state=open]]:shadow-[var(--shadow-floating)]">

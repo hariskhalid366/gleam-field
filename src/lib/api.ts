@@ -11,10 +11,16 @@ export const API_BASE_URL: string =
 
 export const apiConfigured = API_BASE_URL.length > 0;
 
+/** Convert backend-relative upload paths into browser-accessible asset URLs. */
+export function apiAssetUrl(url?: string): string | undefined {
+  if (!url || /^https?:\/\//i.test(url) || !API_BASE_URL) return url;
+  return `${API_BASE_URL.replace(/\/api\/v1$/, "")}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
 const ACCESS_TOKEN_KEY = "servicepro.accessToken";
 const USER_KEY = "servicepro.user";
 
-export type AuthUser = { id: string; name: string; email: string; role: string };
+export type AuthUser = { id: string; name: string; email: string; role: string; phone?: string; city?: string; avatarUrl?: string; createdAt?: string; lastLoginAt?: string };
 type AuthResponse = { user: AuthUser & { _id?: string }; accessToken: string };
 
 export type ApiService = {
@@ -236,7 +242,7 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOptions
   return ((payload as { data?: T } | null)?.data ?? (payload as T)) as T;
 }
 
-async function uploadFile(file: File, purpose: "booking_photo"): Promise<{ fileId: string; url: string }> {
+async function uploadFile(file: File, purpose: "booking_photo" | "avatar"): Promise<{ fileId: string; url: string }> {
   if (!apiConfigured) throw new ApiError("API base URL is not configured", 0);
   const token = tokenStore.get();
   if (!token) throw new ApiError("Please sign in before uploading photos", 401);
@@ -291,6 +297,10 @@ export const api = {
     },
     refresh: () => refreshSession(),
     me: () => apiRequest<{ user: AuthUser; technician?: ApiTechnician | null }>("/auth/me"),
+    updateProfile: (body: { name: string; phone?: string; city?: string; avatarUrl?: string }) => apiRequest<AuthUser>("/auth/profile", { method: "PATCH", body }),
+    changePassword: (currentPassword: string, newPassword: string) => apiRequest("/auth/change-password", { method: "PATCH", body: { currentPassword, newPassword } }),
+    sessions: () => apiRequest<Array<{ _id: string; userAgent?: string; ip?: string; createdAt: string; expiresAt: string }>>("/auth/sessions"),
+    revokeSession: (id: string) => apiRequest(`/auth/sessions/${id}`, { method: "DELETE" }),
   },
   services: {
     list: () => apiRequest<ApiService[]>("/services", { auth: false }),
@@ -332,7 +342,7 @@ export const api = {
     assign: (id: string, technician: string) =>
       apiRequest(`/bookings/${id}/assign`, { method: "PATCH", body: { technician } }),
   },
-  files: { uploadBookingPhoto: (file: File) => uploadFile(file, "booking_photo") },
+  files: { uploadBookingPhoto: (file: File) => uploadFile(file, "booking_photo"), uploadAvatar: (file: File) => uploadFile(file, "avatar") },
   support: {
     createTicket: (body: Record<string, unknown>) =>
       apiRequest<{ id: string }>("/support/tickets", { method: "POST", body }),

@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { EmptyState, PageHeader, Panel, StatusPill, TableShell, Td, Th, Tr } from "@/components/admin/kit";
 import { api, type ApiSupportTicket } from "@/lib/api";
-import type { Tone } from "@/data/admin";
+import type { Tone } from "@/components/admin/kit";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/support")({

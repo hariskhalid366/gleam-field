@@ -1,192 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Camera, ShieldCheck, KeyRound, Monitor, Smartphone, LogOut } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { Camera, KeyRound, Monitor, LogOut, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GlossyIcon, PageHeader, Panel, StatusPill } from "@/components/admin/kit";
+import { PageHeader, Panel, StatusPill } from "@/components/admin/kit";
+import { api, apiAssetUrl, startSession, type AuthUser } from "@/lib/api";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/profile")({
-  head: () => ({
-    meta: [
-      { title: "My Profile — ServicePro Admin" },
-      { name: "description", content: "Manage your admin account details, password, two-factor authentication and active sessions." },
-      { name: "robots", content: "noindex" },
-      { property: "og:title", content: "My Profile — ServicePro Admin" },
-      { property: "og:description", content: "Manage your admin account, password and sessions." },
-    ],
-  }),
-  component: ProfilePage,
-});
-
-const sessions = [
-  { device: "MacBook Pro · Chrome", location: "San Francisco, US", last: "Active now", icon: Monitor, current: true },
-  { device: "iPhone 16 · Safari", location: "San Francisco, US", last: "2 hours ago", icon: Smartphone, current: false },
-  { device: "Windows 11 · Edge", location: "Austin, US", last: "Yesterday", icon: Monitor, current: false },
-];
-
+export const Route = createFileRoute("/admin/profile")({ head: () => ({ meta: [{ title: "My Profile — ServicePro Admin" }, { name: "robots", content: "noindex" }] }), component: ProfilePage });
 function ProfilePage() {
-  const [twoFa, setTwoFa] = useState(true);
-
-  return (
-    <>
-      <PageHeader
-        title="My Profile"
-        description="Your personal admin account and security settings."
-        crumbs={[{ label: "Profile" }]}
-        actions={<Button size="sm" className="btn-press" onClick={() => toast.success("Profile saved (demo)")}>Save profile</Button>}
-      />
-
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <Panel>
-          <div className="flex flex-col items-center text-center">
-            <div className="relative">
-              <Avatar className="h-24 w-24 shadow-[0_10px_30px_-12px_oklch(0.3_0.1_265/0.5)]">
-                <AvatarImage src="https://i.pravatar.cc/160?u=dana" alt="Dana Whitmore" />
-                <AvatarFallback>DW</AvatarFallback>
-              </Avatar>
-              <button
-                onClick={() => toast.success("Avatar upload (demo)")}
-                className="absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full border border-border bg-card shadow-sm transition-colors hover:bg-muted"
-                aria-label="Change photo"
-              >
-                <Camera className="h-4 w-4" />
-              </button>
-            </div>
-            <p className="mt-4 text-lg font-semibold tracking-tight">Dana Whitmore</p>
-            <p className="text-sm text-muted-foreground">dana@servicepro.io</p>
-            <div className="mt-3 flex flex-wrap justify-center gap-2">
-              <StatusPill label="Owner" tone="violet" />
-              <StatusPill label="2FA enabled" tone="emerald" />
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-2.5 border-t border-border pt-4 text-sm">
-            {[["Member since", "March 2023"], ["Last login", "Today · 08:12"], ["Actions this month", "1,284"]].map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between">
-                <span className="text-muted-foreground">{k}</span>
-                <span className="font-medium">{v}</span>
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Tabs defaultValue="details">
-          <TabsList className="mb-4">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details" className="space-y-4">
-            <Panel title="Personal information">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">Full name</label>
-                  <Input defaultValue="Dana Whitmore" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">Job title</label>
-                  <Input defaultValue="Owner & Head of Operations" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">Work email</label>
-                  <Input defaultValue="dana@servicepro.io" type="email" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">Phone</label>
-                  <Input defaultValue="+1 (415) 555-0121" />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium">Bio</label>
-                  <Textarea rows={3} defaultValue="Running dispatch and field operations across 42 metros." />
-                </div>
-              </div>
-            </Panel>
-            <Panel title="Preferences">
-              <div className="space-y-3">
-                {[["Compact tables", "Denser rows across all list views"], ["Email digests", "Daily operations summary at 07:00"], ["Sound alerts", "Play a chime on urgent events"]].map(
-                  ([label, hint], i) => (
-                    <div key={label} className="flex items-center justify-between border-b border-border/70 py-2.5 last:border-0">
-                      <div>
-                        <p className="text-sm font-medium">{label}</p>
-                        <p className="text-xs text-muted-foreground">{hint}</p>
-                      </div>
-                      <Switch defaultChecked={i !== 2} />
-                    </div>
-                  ),
-                )}
-              </div>
-            </Panel>
-          </TabsContent>
-
-          <TabsContent value="security" className="space-y-4">
-            <Panel title="Change password">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium">Current password</label>
-                  <Input type="password" placeholder="••••••••" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">New password</label>
-                  <Input type="password" placeholder="••••••••" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">Confirm new password</label>
-                  <Input type="password" placeholder="••••••••" />
-                </div>
-              </div>
-              <Button className="btn-press mt-4 gap-1.5" onClick={() => toast.success("Password updated (demo)")}>
-                <KeyRound className="h-4 w-4" /> Update password
-              </Button>
-            </Panel>
-
-            <Panel title="Two-factor authentication">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <GlossyIcon icon={ShieldCheck} tone={twoFa ? "emerald" : "slate"} />
-                  <div>
-                    <p className="text-sm font-medium">Authenticator app</p>
-                    <p className="text-xs text-muted-foreground">
-                      {twoFa ? "Enabled · required for owner accounts" : "Disabled — your role requires 2FA"}
-                    </p>
-                  </div>
-                </div>
-                <Switch checked={twoFa} onCheckedChange={(v) => { setTwoFa(v); toast.success(`2FA ${v ? "enabled" : "disabled"} (demo)`); }} />
-              </div>
-            </Panel>
-          </TabsContent>
-
-          <TabsContent value="sessions">
-            <Panel title="Active sessions" description="Revoke anything you don't recognise.">
-              <div className="space-y-2.5">
-                {sessions.map((s) => (
-                  <div key={s.device} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3.5">
-                    <div className="flex items-center gap-3">
-                      <GlossyIcon icon={s.icon} size="sm" tone={s.current ? "blue" : "slate"} />
-                      <div>
-                        <p className="text-sm font-medium">{s.device}</p>
-                        <p className="text-xs text-muted-foreground">{s.location} · {s.last}</p>
-                      </div>
-                    </div>
-                    {s.current ? (
-                      <StatusPill label="This device" tone="emerald" />
-                    ) : (
-                      <Button size="sm" variant="outline" className="gap-1.5" onClick={() => toast.success("Session revoked (demo)")}>
-                        <LogOut className="h-3.5 w-3.5" /> Revoke
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Panel>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </>
-  );
+  const client = useQueryClient(); const fileRef = useRef<HTMLInputElement>(null); const me = useQuery({ queryKey: ["admin-profile"], queryFn: api.auth.me }); const [current, setCurrent] = useState(""); const [next, setNext] = useState(""); const [confirm, setConfirm] = useState("");
+  const update = useMutation({ mutationFn: (body: { name: string; phone?: string; city?: string; avatarUrl?: string }) => api.auth.updateProfile(body), onSuccess: (user) => { startSession({ user, accessToken: localStorage.getItem("servicepro.accessToken") ?? "" }); client.invalidateQueries({ queryKey: ["admin-profile"] }); client.invalidateQueries({ queryKey: ["auth-me"] }); toast.success("Profile updated"); }, onError: showError });
+  const password = useMutation({ mutationFn: () => api.auth.changePassword(current, next), onSuccess: () => { setCurrent(""); setNext(""); setConfirm(""); toast.success("Password updated. Please sign in again on your other devices."); }, onError: showError });
+  const sessions = useQuery({ queryKey: ["admin-sessions"], queryFn: api.auth.sessions }); const revoke = useMutation({ mutationFn: api.auth.revokeSession, onSuccess: () => { client.invalidateQueries({ queryKey: ["admin-sessions"] }); toast.success("Session revoked"); }, onError: showError });
+  const passwordValid = next.length >= 10 && /[a-z]/.test(next) && /[A-Z]/.test(next) && /\d/.test(next);
+  const user = me.data?.user; if (me.isLoading || !user) return <div className="flex justify-center py-20 text-muted-foreground"><LoaderCircle className="mr-2 h-5 w-5 animate-spin" />Loading profile…</div>;
+  const upload = async (file?: File) => { if (!file) return; try { const uploaded = await api.files.uploadAvatar(file); update.mutate({ name: user.name, phone: user.phone, city: user.city, avatarUrl: uploaded.url }); } catch (error) { showError(error); } };
+  return <><PageHeader title="My Profile" description="Your authenticated administrator account and security sessions." crumbs={[{ label: "Profile" }]} /><div className="grid gap-4 lg:grid-cols-[320px_1fr]"><Panel><div className="flex flex-col items-center text-center"><div className="relative"><Avatar className="h-24 w-24"><AvatarImage src={apiAssetUrl(user.avatarUrl)} alt={user.name} /><AvatarFallback>{user.name[0]}</AvatarFallback></Avatar><button onClick={() => fileRef.current?.click()} className="absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full border border-border bg-card"><Camera className="h-4 w-4" /></button><input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(event) => upload(event.target.files?.[0])} /></div><p className="mt-4 text-lg font-semibold">{user.name}</p><p className="text-sm text-muted-foreground">{user.email}</p><StatusPill className="mt-3" label={user.role.replace("_", " ")} tone="violet" /></div><div className="mt-5 space-y-2.5 border-t pt-4 text-sm"><Row label="Member since" value={format(user.createdAt)} /><Row label="Last login" value={format(user.lastLoginAt)} /><Row label="Active sessions" value={String(sessions.data?.length ?? 0)} /></div></Panel><Tabs defaultValue="details"><TabsList className="mb-4"><TabsTrigger value="details">Details</TabsTrigger><TabsTrigger value="security">Security</TabsTrigger><TabsTrigger value="sessions">Sessions</TabsTrigger></TabsList><TabsContent value="details"><ProfileForm user={user} pending={update.isPending} onSave={(body) => update.mutate(body)} /></TabsContent><TabsContent value="security"><Panel title="Change password"><div className="grid gap-3 sm:grid-cols-2"><Field label="Current password"><Input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} /></Field><Field label="New password"><Input type="password" value={next} onChange={(e) => setNext(e.target.value)} /></Field><Field label="Confirm new password"><Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field></div><ul className="mt-2 space-y-1 text-xs text-muted-foreground"><li className={next.length >= 10 ? "text-success" : ""}>• At least 10 characters</li><li className={/[A-Z]/.test(next) && /[a-z]/.test(next) ? "text-success" : ""}>• Uppercase and lowercase letter</li><li className={/\d/.test(next) ? "text-success" : ""}>• At least one number</li>{confirm && confirm !== next && <li className="text-destructive">• Passwords do not match</li>}</ul><Button className="mt-4" disabled={!current || !passwordValid || next !== confirm || password.isPending} onClick={() => password.mutate()}>{password.isPending && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}<KeyRound className="mr-2 h-4 w-4" />Update password</Button></Panel></TabsContent><TabsContent value="sessions"><Panel title="Active sessions" description="Revoke any device you do not recognise.">{sessions.isLoading ? <div className="py-8 text-center text-sm text-muted-foreground">Loading sessions…</div> : <div className="space-y-2.5">{(sessions.data ?? []).map((session, index) => <div key={session._id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5"><div className="flex items-center gap-3"><Monitor className="h-5 w-5 text-muted-foreground" /><div><p className="text-sm font-medium">{session.userAgent || "Browser session"}</p><p className="text-xs text-muted-foreground">{session.ip || "Unknown location"} · Signed in {format(session.createdAt)}</p></div></div>{index === 0 ? <StatusPill label="Most recent" tone="emerald" /> : <Button size="sm" variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate(session._id)}><LogOut className="mr-1 h-3.5 w-3.5" />Revoke</Button>}</div>)}</div>}</Panel></TabsContent></Tabs></div></>;
 }
+function ProfileForm({ user, pending, onSave }: { user: AuthUser; pending: boolean; onSave: (body: { name: string; phone?: string; city?: string; avatarUrl?: string }) => void }) { const [form, setForm] = useState({ name: user.name, phone: user.phone ?? "", city: user.city ?? "", avatarUrl: user.avatarUrl }); const nameError = form.name.trim().length < 2 ? "Enter at least 2 characters." : ""; const phoneError = form.phone && !/^[+\d\s()\-]{6,40}$/.test(form.phone) ? "Enter a valid phone number." : ""; const cityError = form.city.length > 80 ? "City must be 80 characters or fewer." : ""; return <Panel title="Personal information"><div className="grid gap-3 sm:grid-cols-2"><Field label="Full name"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!nameError} />{nameError && <ValidationMessage>{nameError}</ValidationMessage>}</Field><Field label="Work email"><Input value={user.email} disabled /></Field><Field label="Phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!phoneError} />{phoneError && <ValidationMessage>{phoneError}</ValidationMessage>}</Field><Field label="City"><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} aria-invalid={!!cityError} />{cityError && <ValidationMessage>{cityError}</ValidationMessage>}</Field></div><Button className="mt-4" disabled={!!nameError || !!phoneError || !!cityError || pending} onClick={() => onSave(form)}>{pending && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}Save profile</Button></Panel>; }
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="grid gap-1.5 text-sm font-medium">{label}{children}</label>; }
+function ValidationMessage({ children }: { children: React.ReactNode }) { return <span className="text-xs font-normal text-destructive">{children}</span>; }
+function Row({ label, value }: { label: string; value: string }) { return <div className="flex justify-between gap-2"><span className="text-muted-foreground">{label}</span><span className="font-medium">{value}</span></div>; }
+function format(value?: string) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—"; }
+function showError(error: unknown) { toast.error(error instanceof Error ? error.message : "Could not save profile"); }

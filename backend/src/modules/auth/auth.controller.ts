@@ -51,3 +51,6 @@ export const changePassword = catchAsync(async (req: Request, res: Response) => 
 export const me = catchAsync(async (req: Request, res: Response) => {
   return sendSuccess(res, await authService.me(req.user!.id), "Current user");
 });
+export const updateProfile = catchAsync(async (req: Request, res: Response) => sendSuccess(res, await authService.updateProfile(req.user!.id, req.body), "Profile updated"));
+export const sessions = catchAsync(async (req: Request, res: Response) => sendSuccess(res, await authService.sessions(req.user!.id), "Active sessions"));
+export const revokeSession = catchAsync(async (req: Request, res: Response) => { await authService.revokeSession(req.user!.id, req.params.id!); return sendSuccess(res, null, "Session revoked"); });

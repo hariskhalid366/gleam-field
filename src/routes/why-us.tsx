@@ -33,13 +33,14 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 function WhyUsPage() {
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["why-us"],
     enabled: apiConfigured,
     staleTime: 60_000,
-    queryFn: () => api.content.whyUs().catch(() => ({ data: fallbackContent })),
+    queryFn: api.content.whyUs,
   });
-  const content = data?.data ?? fallbackContent;
+  const content = data?.data ?? (apiConfigured ? null : fallbackContent);
+  if (!content) return <main className="mx-auto max-w-3xl px-4 py-24 text-center"><h1 className="text-3xl font-semibold">Why ServicePro</h1><p role="alert" className="mt-4 text-muted-foreground">{isError ? "This page is temporarily unavailable. Please try again shortly." : "Content has not been published yet."}</p></main>;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16">

@@ -14,6 +14,7 @@ import { emitToRoom } from "../../sockets/index.js";
 import { logger } from "../../config/logger.js";
 import { FilesService } from "../files/files.service.js";
 import { notifyAdmins } from "../notifications/notifications.service.js";
+import { Content } from "../../models/content.model.js";
 
 export const technicianRouter = Router();
 const applicationUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -58,6 +59,9 @@ technicianRouter.post(
   "/apply",
   applicationUpload.fields([{ name: "photo", maxCount: 1 }, { name: "idDocument", maxCount: 1 }, { name: "degreeCertificate", maxCount: 1 }]),
   catchAsync(async (req, res) => {
+    const settings = await Content.findOne({ key: "admin.settings" }).select("data").lean();
+    const coverage = (settings?.data as { coverage?: { applicationsOpen?: boolean } } | undefined)?.coverage;
+    if (coverage?.applicationsOpen === false) throw ApiError.forbidden("Technician applications are not currently open");
     const input = applicationBody.parse(req.body);
     const files = req.files as Record<string, Express.Multer.File[]> | undefined;
     const photo = files?.photo?.[0];

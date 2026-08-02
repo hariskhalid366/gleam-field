@@ -51,33 +51,33 @@ function toHomepageTechnician(technician: ApiTechnician): Technician {
 }
 
 function LandingPage() {
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["homepage"],
     enabled: apiConfigured,
     staleTime: 60_000,
     queryFn: async () => {
-      const [liveServices, liveTechnicians] = await Promise.all([
-        api.services.list().catch(() => []),
-        api.technicians.list("?limit=3").catch(() => []),
+      const [liveServices, liveTechnicians, content] = await Promise.all([
+        api.services.list(),
+        api.technicians.list("?limit=3"),
+        api.content.publicSite(),
       ]);
-      // Content is introduced with the seed; catalog data should still be live
-      // when an existing environment has not been seeded yet.
-      const content = await api.content.publicSite().catch(() => ({ data: {} as PublicSiteContent }));
       return { liveServices, liveTechnicians, content: content.data };
     },
   });
+  const offline = !apiConfigured;
   const homepage = {
-    services: data?.liveServices.length ? data.liveServices.map(toDisplayService) : services,
-    technicians: data?.liveTechnicians.length ? data.liveTechnicians.map(toHomepageTechnician) : technicians,
-    testimonials: data?.content.testimonials?.length ? data.content.testimonials : testimonials,
-    trustedCompanies: data?.content.trustedCompanies?.length ? data.content.trustedCompanies : trustedCompanies,
-    pricingPlans: data?.content.pricingPlans?.length ? data.content.pricingPlans : pricingPlans,
-    faqs: data?.content.faqs?.length ? data.content.faqs : faqs,
+    services: data?.liveServices.map(toDisplayService) ?? (offline ? services : []),
+    technicians: data?.liveTechnicians.map(toHomepageTechnician) ?? (offline ? technicians : []),
+    testimonials: data?.content.testimonials ?? (offline ? testimonials : []),
+    trustedCompanies: data?.content.trustedCompanies ?? (offline ? trustedCompanies : []),
+    pricingPlans: data?.content.pricingPlans ?? (offline ? pricingPlans : []),
+    faqs: data?.content.faqs ?? (offline ? faqs : []),
   };
 
   return (
     <>
-      <Hero headline={data?.content.heroHeadline} subcopy={data?.content.heroSubcopy} announcement={data?.content.siteAnnouncement} />
+      {isError && <div role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">Live website content is temporarily unavailable. Please refresh or try again shortly.</div>}
+      <Hero headline={data?.content.heroHeadline} subcopy={data?.content.heroSubcopy} announcement={data?.content.siteAnnouncement} useDefaults={offline} />
       <TrustedStrip companies={homepage.trustedCompanies} />
       <Services items={homepage.services} />
       <WhyUs />
@@ -93,7 +93,7 @@ function LandingPage() {
 
 /* ---------- HERO ---------- */
 
-function Hero({ headline, subcopy, announcement }: { headline?: string; subcopy?: string; announcement?: string }) {
+function Hero({ headline, subcopy, announcement, useDefaults }: { headline?: string; subcopy?: string; announcement?: string; useDefaults: boolean }) {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
@@ -109,13 +109,13 @@ function Hero({ headline, subcopy, announcement }: { headline?: string; subcopy?
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-24 pt-12 lg:grid-cols-12 lg:gap-8 lg:pb-32 lg:pt-16">
         <div className="lg:col-span-6 xl:col-span-6">
           <Badge variant="outline" className="rounded-full border-primary/20 bg-primary-soft px-3 py-1 text-primary">
-            <Sparkles className="mr-1 h-3 w-3" /> {announcement || "Now serving 42 metros"}
+            <Sparkles className="mr-1 h-3 w-3" /> {announcement ?? (useDefaults ? "Now serving 42 metros" : "ServicePro")}
           </Badge>
           <h1 className="mt-6 text-5xl font-light leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-            {headline || "Reliable home services, delivered by verified pros."}
+            {headline ?? (useDefaults ? "Reliable home services, delivered by verified pros." : "Reliable home services.")}
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            {subcopy || "Book trusted electricians, plumbers, AC technicians, mechanics, and more in just a few clicks — with live tracking, transparent pricing, and 24/7 emergency dispatch."}
+            {subcopy ?? (useDefaults ? "Book trusted electricians, plumbers, AC technicians, mechanics, and more in just a few clicks — with live tracking, transparent pricing, and 24/7 emergency dispatch." : "Book a verified professional in a few clicks.")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="btn-press shadow-[var(--shadow-glow)]">

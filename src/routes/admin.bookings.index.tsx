@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, PageHeader, Panel, StatusPill, TableShell, Td, Th, Tr, money } from "@/components/admin/kit";
 import { api } from "@/lib/api";
-import type { Tone } from "@/data/admin";
+import type { Tone } from "@/components/admin/kit";
 
 export const Route = createFileRoute("/admin/bookings/")({ head: () => ({ meta: [{ title: "Bookings — ServicePro Admin" }, { name: "robots", content: "noindex" }] }), component: BookingsPage });
 const PAGE = 10;

@@ -3,7 +3,8 @@ import { authenticate } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validate.js";
 import { authLimiter } from "../../middleware/rateLimit.js";
 import * as controller from "./auth.controller.js";
-import { changePasswordSchema, loginSchema, refreshSchema, registerSchema } from "./auth.validation.js";
+import { changePasswordSchema, loginSchema, refreshSchema, registerSchema, updateProfileSchema } from "./auth.validation.js";
+import { idParamSchema } from "../common/query.validation.js";
 
 export const authRouter = Router();
 
@@ -104,3 +105,6 @@ authRouter.patch("/change-password", authenticate, validate({ body: changePasswo
  *       401: { description: Unauthorized }
  */
 authRouter.get("/me", authenticate, controller.me);
+authRouter.patch("/profile", authenticate, validate({ body: updateProfileSchema }), controller.updateProfile);
+authRouter.get("/sessions", authenticate, controller.sessions);
+authRouter.delete("/sessions/:id", authenticate, validate({ params: idParamSchema }), controller.revokeSession);

@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import path from "node:path";
 import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";
@@ -35,6 +36,8 @@ export function createApp(): Express {
   app.use(mongoSanitize()); // strips $ and . operators from user input
   app.use(hpp());
   app.use(compression());
+  // Uploaded avatars and documents are stored under backend/public/uploads and referenced by relative URLs.
+  app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads"), { fallthrough: false, maxAge: env.isProd ? "1d" : 0 }));
   app.use(morgan(env.isProd ? "combined" : "dev", { stream: httpLogStream }));
   app.use(globalLimiter);
 
