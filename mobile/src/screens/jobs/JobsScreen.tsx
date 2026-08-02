@@ -45,7 +45,7 @@ export default function JobsScreen({ navigation, route }: TabScreenProps<"Jobs">
       />
 
       {loading ? (
-        <SkeletonList count={3} />
+        <SkeletonList rows={3} />
       ) : jobs.length ? (
         <View style={{ gap: spacing.sm }}>
           {jobs.map((job) => (
