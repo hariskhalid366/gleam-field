@@ -51,7 +51,8 @@ export default function DocumentsScreen({ navigation }: ScreenProps<"Documents">
             right={<StatusChip label={LABEL[d.status] ?? d.status} tone={TONE[d.status] ?? "neutral"} />}
           >
             <UploadCard
-              label={d.label}
+              title="Replace file"
+              description="JPG or PDF, up to 5 MB"
               value={uploads[d.id] ?? null}
               onPick={() => pick(d.id, `${d.label}.jpg`)}
               onRemove={() => setUploads((u) => ({ ...u, [d.id]: null }))}
