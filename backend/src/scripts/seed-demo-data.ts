@@ -52,6 +52,10 @@ const customerRows = [
 ] as const;
 
 const publicContent = {
+  heroHeadline: "Reliable home services, delivered by verified pros.",
+  heroSubcopy: "Book trusted electricians, plumbers, AC technicians, mechanics, and more in just a few clicks — with live tracking, transparent pricing, and 24/7 emergency dispatch.",
+  siteAnnouncement: "Now serving 42 metros",
+  privacyNotice: "Last reviewed by counsel in June 2026.",
   testimonials: [
     { id: 1, name: "Jordan Blake", role: "Homeowner, Austin", avatar: avatar("jordan", 240), rating: 5, quote: "Booked a plumber at 9pm on a Sunday. Amina arrived in 35 minutes, fixed the leak, and cleaned up. It felt like magic." },
     { id: 2, name: "Rina Patel", role: "Property Manager, Seattle", avatar: avatar("rina", 240), rating: 5, quote: "We manage 40 units. ServicePro replaced three vendors — the SLA reporting alone is worth it." },

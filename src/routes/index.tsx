@@ -77,7 +77,7 @@ function LandingPage() {
 
   return (
     <>
-      <Hero />
+      <Hero headline={data?.content.heroHeadline} subcopy={data?.content.heroSubcopy} announcement={data?.content.siteAnnouncement} />
       <TrustedStrip companies={homepage.trustedCompanies} />
       <Services items={homepage.services} />
       <WhyUs />
@@ -93,7 +93,7 @@ function LandingPage() {
 
 /* ---------- HERO ---------- */
 
-function Hero() {
+function Hero({ headline, subcopy, announcement }: { headline?: string; subcopy?: string; announcement?: string }) {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
@@ -109,16 +109,13 @@ function Hero() {
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-24 pt-12 lg:grid-cols-12 lg:gap-8 lg:pb-32 lg:pt-16">
         <div className="lg:col-span-6 xl:col-span-6">
           <Badge variant="outline" className="rounded-full border-primary/20 bg-primary-soft px-3 py-1 text-primary">
-            <Sparkles className="mr-1 h-3 w-3" /> Now serving 42 metros
+            <Sparkles className="mr-1 h-3 w-3" /> {announcement || "Now serving 42 metros"}
           </Badge>
           <h1 className="mt-6 text-5xl font-light leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-            Reliable home services,<br />
-            <span className="font-semibold">delivered by verified pros.</span>
+            {headline || "Reliable home services, delivered by verified pros."}
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Book trusted electricians, plumbers, AC technicians, mechanics, and
-            more in just a few clicks — with live tracking, transparent pricing,
-            and 24/7 emergency dispatch.
+            {subcopy || "Book trusted electricians, plumbers, AC technicians, mechanics, and more in just a few clicks — with live tracking, transparent pricing, and 24/7 emergency dispatch."}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="btn-press shadow-[var(--shadow-glow)]">

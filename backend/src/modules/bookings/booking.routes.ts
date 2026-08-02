@@ -12,6 +12,7 @@ import { sendPaginated, sendSuccess } from "../../utils/response.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { idParamSchema, objectId, paginationSchema } from "../common/query.validation.js";
 import { emitToRoom } from "../../sockets/index.js";
+import { notifyAdmins } from "../notifications/notifications.service.js";
 
 export const bookingRouter = Router();
 
@@ -114,6 +115,7 @@ bookingRouter.post(
     });
 
     emitToRoom("admins", "booking:created", { id: booking._id, reference: booking.reference });
+    await notifyAdmins({ title: body.isEmergency ? "Emergency booking created" : "New booking created", body: `${service.name} scheduled for ${body.address.city}.`, category: "booking", link: `/admin/bookings/${booking.id}` });
     return sendSuccess(res, booking, "Booking created", 201);
   }),
 );

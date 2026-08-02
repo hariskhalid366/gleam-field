@@ -260,7 +260,66 @@ describe("ServicePro API Security & Integration Tests", () => {
     });
   });
 
-  describe("5. Admin Platform Operations (Users, Payments, Stats)", () => {
+  describe("5. Public Technician Applications", () => {
+    let applicationId: string;
+    test("POST /technicians/apply should require photo, ID and degree/certificate", async () => {
+      await request(app)
+        .post("/api/v1/technicians/apply")
+        .field("name", "Incomplete Applicant")
+        .field("email", "incomplete.applicant@example.com")
+        .field("phone", "+15550123456")
+        .field("city", "Austin")
+        .field("experienceYears", "3")
+        .field("services", JSON.stringify(["Electrical"]))
+        .field("bio", "Experienced electrician with more than three years in the trade.")
+        .expect(400);
+    });
+
+    test("POST /technicians/apply should create a pending application with all required files", async () => {
+      const email = `applicant-${Date.now()}@example.com`;
+      const res = await request(app)
+        .post("/api/v1/technicians/apply")
+        .field("name", "Complete Applicant")
+        .field("email", email)
+        .field("phone", "+15550123456")
+        .field("city", "Austin")
+        .field("experienceYears", "3")
+        .field("services", JSON.stringify(["Electrical"]))
+        .field("bio", "Experienced electrician with more than three years in the trade.")
+        .attach("photo", Buffer.from("image"), { filename: "photo.png", contentType: "image/png" })
+        .attach("idDocument", Buffer.from("document"), { filename: "id.pdf", contentType: "application/pdf" })
+        .attach("degreeCertificate", Buffer.from("certificate"), { filename: "degree.pdf", contentType: "application/pdf" })
+        .expect(201);
+
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.data.status, "pending");
+      assert.ok(res.body.data.applicationId);
+      applicationId = res.body.data.applicationId;
+    });
+
+    test("admin technician routes should list, review and approve the application", async () => {
+      const list = await request(app)
+        .get("/api/v1/technicians/admin/list?status=pending")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+      assert.ok(list.body.data.some((technician: { _id: string }) => technician._id === applicationId));
+
+      const detail = await request(app)
+        .get(`/api/v1/technicians/admin/${applicationId}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+      assert.strictEqual(detail.body.data.documents.length, 2);
+
+      const decision = await request(app)
+        .patch(`/api/v1/technicians/${applicationId}/verification`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ status: "approved", reviewNotes: "Documents verified." })
+        .expect(200);
+      assert.strictEqual(decision.body.data.verificationStatus, "approved");
+    });
+  });
+
+  describe("6. Admin Platform Operations (Users, Payments, Stats)", () => {
     test("GET /users should list registered accounts for admins only", async () => {
       // Admin should succeed
       const res = await request(app)

@@ -43,4 +43,18 @@ export class AdminController {
     const events = await AdminService.getCalendarEvents(year, month, technicianId);
     return sendSuccess(res, { year, month, events }, "Admin Monthly Calendar data");
   }
+
+  static async getReport(req: Request, res: Response) {
+    const report = await AdminService.getReportData(req.query.range as "7d" | "30d" | "12m");
+    return sendSuccess(res, report, "Report generated");
+  }
+
+  static async exportReport(req: Request, res: Response) {
+    const report = await AdminService.getReportData(req.query.range as "7d" | "30d" | "12m");
+    const rows = [["ServicePro report", report.range], ["From", report.from.toISOString()], ["To", report.to.toISOString()], [], ["Metric", "Value"], ...Object.entries(report.metrics).map(([key, value]) => [key, String(value)]), [], ["Period", "Revenue"], ...report.revenueSeries.map((row) => [row.label, String(row.revenue)]), [], ["Service", "Bookings"], ...report.serviceDistribution.map((row) => [row.name, String(row.value)])];
+    const csv = rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n");
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="servicepro-report-${report.range}.csv"`);
+    return res.send(csv);
+  }
 }

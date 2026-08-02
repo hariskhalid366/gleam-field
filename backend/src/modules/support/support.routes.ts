@@ -7,6 +7,7 @@ import { catchAsync } from "../../utils/catchAsync.js";
 import { sendPaginated, sendSuccess } from "../../utils/response.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { idParamSchema, paginationSchema } from "../common/query.validation.js";
+import { notifyAdmins } from "../notifications/notifications.service.js";
 
 export const supportRouter = Router();
 
@@ -88,6 +89,7 @@ supportRouter.post(
       requesterEmail,
       messages: [{ text: message }],
     });
+    await notifyAdmins({ title: hasContactedBefore ? "Repeat website contact" : "New website contact", body: `${name} submitted: ${subject}`, category: "contact", link: "/admin/support" });
     return sendSuccess(res, { id: ticket.id, priority: ticket.priority, repeatContact: ticket.repeatContact }, "Message received", 201);
   }),
 );
@@ -130,6 +132,29 @@ supportRouter.get(
     ]);
 
     return sendPaginated(res, items, { page, limit, total }, "Support tickets");
+  }),
+);
+
+/** Admin inbox for submissions from the public website Contact page only. */
+supportRouter.get(
+  "/contact-submissions",
+  authenticate,
+  isAdmin,
+  validate({ query: listQuery }),
+  catchAsync(async (req, res) => {
+    const { page, limit, status } = req.query as unknown as z.infer<typeof listQuery>;
+    const filter: Record<string, unknown> = { requester: { $exists: false } };
+    if (status) filter.status = status;
+    const [items, total] = await Promise.all([
+      SupportTicket.find(filter)
+        .populate("messages.sender", "name")
+        .sort({ repeatContact: -1, updatedAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      SupportTicket.countDocuments(filter),
+    ]);
+    return sendPaginated(res, items, { page, limit, total }, "Website contact submissions");
   }),
 );
 

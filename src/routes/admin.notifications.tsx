@@ -1,155 +1,26 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Bell, Send, Check, CalendarCheck, ShieldCheck, CreditCard, LifeBuoy, ServerCog } from "lucide-react";
+import { Bell, Check, CalendarCheck, ShieldCheck, CreditCard, LifeBuoy, ServerCog, LoaderCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, GlossyIcon, PageHeader, Panel, StatusPill } from "@/components/admin/kit";
-import { adminNotifications, type AdminNotification, type Tone } from "@/data/admin";
+import { api, type ApiAdminNotification } from "@/lib/api";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/notifications")({
-  head: () => ({
-    meta: [
-      { title: "Notifications — ServicePro Admin" },
-      { name: "description", content: "Notification center and broadcast composer for customers and technicians." },
-      { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Notifications — ServicePro Admin" },
-      { property: "og:description", content: "Notification center and broadcast composer." },
-    ],
-  }),
-  component: NotificationsPage,
-});
-
-const catMeta: Record<AdminNotification["category"], { tone: Tone; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }> = {
-  "Booking Updates": { tone: "blue", icon: CalendarCheck },
-  Approvals: { tone: "violet", icon: ShieldCheck },
-  Support: { tone: "amber", icon: LifeBuoy },
-  Payments: { tone: "emerald", icon: CreditCard },
-  "System Alerts": { tone: "slate", icon: ServerCog },
-};
+export const Route = createFileRoute("/admin/notifications")({ head: () => ({ meta: [{ title: "Notifications — ServicePro Admin" }, { name: "robots", content: "noindex" }] }), component: NotificationsPage });
+const meta: Record<ApiAdminNotification["category"], { tone: "blue" | "violet" | "amber" | "emerald" | "slate"; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; label: string }> = { booking: { tone: "blue", icon: CalendarCheck, label: "Bookings" }, contact: { tone: "amber", icon: LifeBuoy, label: "Website contact" }, technician: { tone: "violet", icon: ShieldCheck, label: "Technicians" }, payment: { tone: "emerald", icon: CreditCard, label: "Payments" }, system: { tone: "slate", icon: ServerCog, label: "System" } };
+const time = (value: string) => new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 
 function NotificationsPage() {
-  const [items, setItems] = useState(adminNotifications);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [audience, setAudience] = useState("all-customers");
-  const [channels, setChannels] = useState({ push: true, email: true, sms: false });
-
-  const unread = items.filter((n) => !n.read);
-
-  return (
-    <>
-      <PageHeader
-        title="Notifications"
-        description="System events plus outbound broadcasts to customers and technicians."
-        crumbs={[{ label: "Notifications" }]}
-        actions={
-          <Button size="sm" variant="outline" onClick={() => { setItems((i) => i.map((n) => ({ ...n, read: true }))); toast.success("All marked read"); }}>
-            <Check className="mr-1.5 h-4 w-4" /> Mark all read
-          </Button>
-        }
-      />
-
-      <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
-        <Panel bodyClassName="p-0">
-          <Tabs defaultValue="unread" className="p-4">
-            <TabsList>
-              <TabsTrigger value="unread">Unread ({unread.length})</TabsTrigger>
-              <TabsTrigger value="all">All ({items.length})</TabsTrigger>
-            </TabsList>
-            {(["unread", "all"] as const).map((tab) => {
-              const list = tab === "unread" ? unread : items;
-              return (
-                <TabsContent key={tab} value={tab} className="mt-4 space-y-2">
-                  {list.length === 0 ? (
-                    <EmptyState icon={Bell} title="You're all caught up" description="New system events will appear here in real time." />
-                  ) : (
-                    list.map((n) => {
-                      const meta = catMeta[n.category];
-                      return (
-                        <div key={n.id} className="flex gap-3 rounded-xl border border-border p-3.5 transition-colors hover:bg-muted/40">
-                          <GlossyIcon icon={meta.icon} tone={meta.tone} size="sm" />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-semibold">{n.title}</p>
-                              <span className="shrink-0 text-[11px] text-muted-foreground">{n.time}</span>
-                            </div>
-                            <p className="mt-1 text-xs text-muted-foreground">{n.body}</p>
-                            <div className="mt-2 flex items-center justify-between">
-                              <StatusPill label={n.category} tone={meta.tone} />
-                              {!n.read && (
-                                <button
-                                  className="text-[11px] font-semibold text-primary hover:underline"
-                                  onClick={() => setItems((i) => i.map((x) => (x.id === n.id ? { ...x, read: true } : x)))}
-                                >
-                                  Mark read
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </TabsContent>
-              );
-            })}
-          </Tabs>
-        </Panel>
-
-        <div className="space-y-4">
-          <Panel title="Send a broadcast" description="Reaches the selected audience across enabled channels.">
-            <div className="space-y-3">
-              <Select value={audience} onValueChange={setAudience}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-customers">All customers</SelectItem>
-                  <SelectItem value="all-technicians">All technicians</SelectItem>
-                  <SelectItem value="pending-verification">Technicians pending verification</SelectItem>
-                  <SelectItem value="vip">VIP customers</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Notification title" />
-              <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} placeholder="Message body…" />
-              <div className="space-y-2 rounded-xl border border-border p-3">
-                {([["push", "Push notification"], ["email", "Email"], ["sms", "SMS"]] as const).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between text-sm">
-                    <span>{label}</span>
-                    <Switch
-                      checked={channels[key]}
-                      onCheckedChange={(v) => setChannels((c) => ({ ...c, [key]: v }))}
-                    />
-                  </div>
-                ))}
-              </div>
-              <Button
-                className="btn-press w-full gap-1.5"
-                disabled={!title.trim() || !body.trim()}
-                onClick={() => { setTitle(""); setBody(""); toast.success("Broadcast queued (demo)"); }}
-              >
-                <Send className="h-4 w-4" /> Send broadcast
-              </Button>
-            </div>
-          </Panel>
-
-          <Panel title="Delivery health">
-            <div className="space-y-2.5 text-sm">
-              {[["Push delivery", "99.2%", "emerald"], ["Email delivery", "98.4%", "emerald"], ["SMS delivery", "94.1%", "amber"]].map(
-                ([k, v, tone]) => (
-                  <div key={k} className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{k}</span>
-                    <StatusPill label={v} tone={tone as Tone} />
-                  </div>
-                ),
-              )}
-            </div>
-          </Panel>
-        </div>
-      </div>
-    </>
-  );
+  const client = useQueryClient(); const [title, setTitle] = useState(""); const [body, setBody] = useState(""); const notices = useQuery({ queryKey: ["admin-notifications"], queryFn: () => api.notifications.list("?limit=100") });
+  const invalidate = () => client.invalidateQueries({ queryKey: ["admin-notifications"] });
+  const markOne = useMutation({ mutationFn: (id: string) => api.notifications.markRead(id, true), onSuccess: invalidate, onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update notification") });
+  const markAll = useMutation({ mutationFn: api.notifications.markAllRead, onSuccess: () => { invalidate(); toast.success("All notifications marked read"); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Could not update notifications") });
+  const sendToTechnicians = useMutation({ mutationFn: () => api.notifications.sendToTechnicians(title.trim(), body.trim()), onSuccess: ({ delivered }) => { setTitle(""); setBody(""); toast.success(`Notification sent to ${delivered} technician${delivered === 1 ? "" : "s"}`); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Could not send notification") });
+  const items = notices.data ?? []; const unread = items.filter((item) => !item.read);
+  return <><PageHeader title="Notifications" description="Live operational alerts for website contacts, bookings, technician activity, payments, and system events." crumbs={[{ label: "Notifications" }]} actions={<Button size="sm" variant="outline" disabled={!unread.length || markAll.isPending} onClick={() => markAll.mutate()}>{markAll.isPending ? <LoaderCircle className="mr-1.5 h-4 w-4 animate-spin" /> : <Check className="mr-1.5 h-4 w-4" />}Mark all read</Button>} /><div className="grid gap-4 lg:grid-cols-[1fr_300px]"><Panel bodyClassName="p-0"><Tabs defaultValue="unread" className="p-4"><TabsList><TabsTrigger value="unread">Unread ({unread.length})</TabsTrigger><TabsTrigger value="all">All ({items.length})</TabsTrigger></TabsList>{(["unread", "all"] as const).map((tab) => <TabsContent key={tab} value={tab} className="mt-4 space-y-2"><NotificationList items={tab === "unread" ? unread : items} loading={notices.isLoading} error={notices.isError} onRead={(id) => markOne.mutate(id)} pending={markOne.isPending} /></TabsContent>)}</Tabs></Panel><div className="space-y-4"><Panel title="Notify technicians" description="Sends to every approved technician and their live session."><div className="space-y-3"><Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Notification title" maxLength={180} /><Textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder="Message for technicians…" rows={4} maxLength={1000} /><Button className="w-full gap-1.5" disabled={!title.trim() || !body.trim() || sendToTechnicians.isPending} onClick={() => sendToTechnicians.mutate()}>{sendToTechnicians.isPending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Send to approved technicians</Button></div></Panel><Panel title="Alert rules"><ul className="space-y-3 text-sm text-muted-foreground"><li>Website Contact Form submissions, with repeat contacts elevated to urgent.</li><li>New and emergency bookings created by customers.</li><li>Technician applications and verification decisions.</li><li>Payment events can be added as soon as the payment provider webhook is enabled.</li></ul></Panel><Panel title="Delivery"><StatusPill label="Live admin feed" tone="emerald" /><p className="mt-3 text-xs text-muted-foreground">New events are stored in the backend and also emitted to connected admin sessions.</p></Panel></div></div></>;
 }
+function NotificationList({ items, loading, error, onRead, pending }: { items: ApiAdminNotification[]; loading: boolean; error: boolean; onRead: (id: string) => void; pending: boolean }) { if (loading) return <div className="flex justify-center py-16 text-muted-foreground"><LoaderCircle className="mr-2 h-5 w-5 animate-spin" />Loading notifications…</div>; if (error) return <EmptyState icon={Bell} title="Could not load notifications" description="Check the backend connection and administrator session." />; if (!items.length) return <EmptyState icon={Bell} title="You're all caught up" description="New operational events will appear here." />; return <div className="space-y-2">{items.map((item) => { const itemMeta = meta[item.category]; const content = <><p className="text-sm font-semibold">{item.title}</p><p className="mt-1 text-xs text-muted-foreground">{item.body}</p></>; return <div key={item._id} className="flex gap-3 rounded-xl border border-border p-3.5"><GlossyIcon icon={itemMeta.icon} tone={itemMeta.tone} size="sm" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2">{item.link ? <Link to={item.link as any} className="hover:underline">{content}</Link> : content}<span className="shrink-0 text-[11px] text-muted-foreground">{time(item.createdAt)}</span></div><div className="mt-2 flex items-center justify-between"><StatusPill label={itemMeta.label} tone={itemMeta.tone} />{!item.read && <button disabled={pending} className="text-[11px] font-semibold text-primary hover:underline" onClick={() => onRead(item._id)}>Mark read</button>}</div></div></div>; })}</div>; }

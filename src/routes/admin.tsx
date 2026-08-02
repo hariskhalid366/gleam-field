@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { isAuthenticated } from "@/lib/api";
+import { api, isAuthenticated, tokenStore, userStore } from "@/lib/api";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -20,13 +20,27 @@ function AdminLayout() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
 
-  // Session check runs on the client — the token lives in localStorage.
+  // Verify both the access token and the current server-side role before rendering admin data.
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate({ to: "/admin-login", replace: true });
-      return;
-    }
-    setReady(true);
+    if (!isAuthenticated()) return void navigate({ to: "/admin-login", replace: true });
+    let active = true;
+    void api.auth.me()
+      .then((result) => {
+        if (!active) return;
+        if (!["admin", "super_admin"].includes(result.user.role)) {
+          tokenStore.clear();
+          navigate({ to: "/admin-login", replace: true });
+          return;
+        }
+        userStore.set(result.user);
+        setReady(true);
+      })
+      .catch(() => {
+        if (!active) return;
+        tokenStore.clear();
+        navigate({ to: "/admin-login", replace: true });
+      });
+    return () => { active = false; };
   }, [navigate]);
 
   if (!ready) {

@@ -112,8 +112,9 @@ type FormState = {
   experience: string;
   categories: string[];
   bio: string;
-  idFile: string | null;
-  certFile: string | null;
+  photoFile: File | null;
+  idFile: File | null;
+  certFile: File | null;
   confirm: boolean;
 };
 
@@ -129,6 +130,7 @@ function ApplyPage() {
     experience: "",
     categories: [],
     bio: "",
+    photoFile: null,
     idFile: null,
     certFile: null,
     confirm: false,
@@ -159,7 +161,7 @@ function ApplyPage() {
         form.categories.length > 0 &&
         form.bio.trim().length >= 20
       );
-    if (step === 3) return !!form.idFile && !!form.certFile;
+    if (step === 3) return !!form.photoFile && !!form.idFile && !!form.certFile;
     if (step === 4) return form.confirm;
     return false;
   }, [step, form]);
@@ -169,18 +171,17 @@ function ApplyPage() {
     setSubmitting(true);
     try {
       if (apiConfigured) {
-        await api.auth.register({
+        await api.technicians.apply({
           name: form.name,
           email: form.email,
           phone: form.phone,
           city: form.city,
-          role: "technician",
-          password: `${form.email.split("@")[0]}Temp#2024`,
-          profile: {
-            experience: form.experience,
-            categories: form.categories,
-            bio: form.bio,
-          },
+          experienceYears: experienceToYears(form.experience),
+          services: form.categories,
+          bio: form.bio,
+          photo: form.photoFile!,
+          idDocument: form.idFile!,
+          degreeCertificate: form.certFile!,
         });
         toast.success("Application submitted — we'll email you next steps.");
       } else {
@@ -444,19 +445,29 @@ function ApplyPage() {
               )}
 
               {step === 3 && (
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-3">
                   <DropCard
-                    label="Government ID"
+                    label="Technician photo *"
+                    hint="Clear JPG, PNG, or WEBP headshot"
+                    file={form.photoFile}
+                    accept="image/jpeg,image/png,image/webp"
+                    onFile={(file) => update("photoFile", file)}
+                  />
+                  <DropCard
+                    label="Government ID *"
                     hint="Driver's license or passport"
                     file={form.idFile}
-                    onFile={(name) => update("idFile", name)}
+                    accept="image/jpeg,image/png,application/pdf"
+                    onFile={(file) => update("idFile", file)}
                   />
                   <DropCard
-                    label="Trade certificate"
-                    hint="License, diploma, or credential"
+                    label="Degree / trade certificate *"
+                    hint="Required: degree, diploma, license, or credential"
                     file={form.certFile}
-                    onFile={(name) => update("certFile", name)}
+                    accept="image/jpeg,image/png,application/pdf"
+                    onFile={(file) => update("certFile", file)}
                   />
+                  <p className="sm:col-span-3 text-sm text-muted-foreground">All three files are required. Documents can be JPG, PNG, or PDF; photo must be an image.</p>
                 </div>
               )}
 
@@ -473,8 +484,9 @@ function ApplyPage() {
                       <Summary k="City" v={form.city} />
                       <Summary k="Experience" v={form.experience} />
                       <Summary k="Categories" v={form.categories.join(", ") || "—"} />
-                      <Summary k="ID document" v={form.idFile || "—"} />
-                      <Summary k="Certificate" v={form.certFile || "—"} />
+                      <Summary k="Technician photo" v={form.photoFile?.name || "—"} />
+                      <Summary k="ID document" v={form.idFile?.name || "—"} />
+                      <Summary k="Degree / certificate" v={form.certFile?.name || "—"} />
                     </dl>
                     <div className="mt-5">
                       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Bio</p>
@@ -511,7 +523,7 @@ function ApplyPage() {
               {step < 4 ? (
                 <Button
                   size="lg"
-                  disabled={!canProceed}
+                  disabled={!canProceed || submitting}
                   onClick={() => setStep((s) => s + 1)}
                   className="btn-press shadow-[var(--shadow-glow)]"
                 >
@@ -524,7 +536,7 @@ function ApplyPage() {
                   onClick={submit}
                   className="btn-press shadow-[var(--shadow-glow)]"
                 >
-                  {submitting ? "Submitting…" : "Submit application"} <Check className="ml-1 h-4 w-4" strokeWidth={3} />
+                  {submitting ? "Submitting securely…" : "Submit application"} <Check className="ml-1 h-4 w-4" strokeWidth={3} />
                 </Button>
               )}
             </div>
@@ -553,20 +565,29 @@ function Summary({ k, v }: { k: string; v: string }) {
   );
 }
 
+function experienceToYears(value: string) {
+  if (value === "1–2 yrs") return 2;
+  if (value === "3–5 yrs") return 4;
+  if (value === "6–10 yrs") return 8;
+  return 10;
+}
+
 function DropCard({
   label,
   hint,
   file,
+  accept,
   onFile,
 }: {
   label: string;
   hint: string;
-  file: string | null;
-  onFile: (name: string) => void;
+  file: File | null;
+  accept: string;
+  onFile: (file: File) => void;
 }) {
   const [hover, setHover] = useState(false);
   const pick = (files: FileList | null) => {
-    if (files && files[0]) onFile(files[0].name);
+    if (files && files[0]) onFile(files[0]);
   };
   return (
     <label
@@ -593,14 +614,14 @@ function DropCard({
         type="file"
         className="sr-only"
         onChange={(e) => pick(e.target.files)}
-        accept="image/*,application/pdf"
+        accept={accept}
       />
       {file ? (
         <>
           <BadgeIcon icon={Check} tone="emerald" />
           <div>
             <p className="text-sm font-semibold">{label}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{file}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{file.name}</p>
             <p className="mt-2 text-xs font-medium text-primary">Replace file</p>
           </div>
         </>

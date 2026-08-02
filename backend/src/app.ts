@@ -12,6 +12,7 @@ import { mountSwagger } from "./config/swagger.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { apiRouter } from "./routes.js";
+import { ApiError } from "./utils/ApiError.js";
 
 export function createApp(): Express {
   const app = express();
@@ -24,7 +25,7 @@ export function createApp(): Express {
   app.use(
     cors({
       origin: (origin, cb) =>
-        !origin || env.corsOrigins.includes(origin) ? cb(null, true) : cb(new Error("Origin not allowed by CORS")),
+        !origin || env.corsOrigins.includes(origin) ? cb(null, true) : cb(ApiError.forbidden("Origin not allowed by CORS")),
       credentials: true,
     }),
   );

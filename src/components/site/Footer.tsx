@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { api, apiConfigured, type PublicSiteContent } from "@/lib/api";
 import { Zap, Twitter, Linkedin, Instagram, Facebook } from "lucide-react";
 
 export function Footer() {
+  const { data } = useQuery({ queryKey: ["footer-content"], enabled: apiConfigured, staleTime: 60_000, queryFn: () => api.content.publicSite().catch(() => ({ data: {} as PublicSiteContent })) });
   return (
     <footer className="border-t border-border bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-16">
@@ -34,7 +37,7 @@ export function Footer() {
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row md:items-center">
           <p>© {new Date().getFullYear()} ServicePro, Inc. All rights reserved.</p>
           <div className="flex gap-4">
-            <a href="#">Privacy Policy</a>
+            <span>{data?.data.privacyNotice || "Privacy Policy"}</span>
             <a href="#">Terms of Service</a>
             <a href="#">Cookies</a>
           </div>

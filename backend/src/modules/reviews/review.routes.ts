@@ -11,6 +11,33 @@ import { idParamSchema, objectId, paginationSchema } from "../common/query.valid
 
 export const reviewRouter = Router();
 
+const adminListQuery = paginationSchema.extend({
+  technician: objectId.optional(),
+  isHidden: z.coerce.boolean().optional(),
+  isReported: z.coerce.boolean().optional(),
+});
+
+/** Internal moderation list. Unlike the public endpoint, this includes hidden and reported reviews. */
+reviewRouter.get(
+  "/admin/list",
+  authenticate,
+  isAdmin,
+  validate({ query: adminListQuery }),
+  catchAsync(async (req, res) => {
+    const { page, limit, technician, isHidden, isReported, q } = req.query as unknown as z.infer<typeof adminListQuery>;
+    const filter: Record<string, unknown> = {};
+    if (technician) filter.technician = technician;
+    if (isHidden !== undefined) filter.isHidden = isHidden;
+    if (isReported !== undefined) filter.isReported = isReported;
+    if (q) filter.comment = { $regex: q, $options: "i" };
+    const [items, total] = await Promise.all([
+      Review.find(filter).populate("customer", "name avatarUrl").populate({ path: "technician", populate: { path: "user", select: "name" } }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      Review.countDocuments(filter),
+    ]);
+    return sendPaginated(res, items, { page, limit, total }, "Reviews");
+  }),
+);
+
 /**
  * @openapi
  * /reviews:

@@ -11,6 +11,7 @@ import { userRouter } from "./modules/users/user.routes.js";
 import { adminRouter } from "./modules/admin/admin.routes.js";
 import { filesRouter } from "./modules/files/files.routes.js";
 import { contentRouter } from "./modules/content/content.routes.js";
+import { notificationsRouter } from "./modules/notifications/notifications.routes.js";
 
 export const apiRouter = Router();
 
@@ -66,3 +67,4 @@ apiRouter.use("/users", userRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/files", filesRouter);
 apiRouter.use("/content", contentRouter);
+apiRouter.use("/notifications", notificationsRouter);

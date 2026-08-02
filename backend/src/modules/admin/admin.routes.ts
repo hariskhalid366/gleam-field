@@ -22,6 +22,7 @@ const calendarQuery = z.object({
   month: z.coerce.number().int().min(1).max(12),
   technicianId: z.string().optional(),
 });
+const reportQuery = z.object({ range: z.enum(["7d", "30d", "12m"]).default("30d") });
 
 /**
  * @openapi
@@ -46,6 +47,9 @@ adminRouter.get("/stats", authenticate, isAdmin, catchAsync(AdminController.getS
  *       200: { description: Aggregated dashboard response }
  */
 adminRouter.get("/dashboard", authenticate, isAdmin, catchAsync(AdminController.getDashboard));
+
+adminRouter.get("/reports", authenticate, isAdmin, validate({ query: reportQuery }), catchAsync(AdminController.getReport));
+adminRouter.get("/reports/export", authenticate, isAdmin, validate({ query: reportQuery }), catchAsync(AdminController.exportReport));
 
 /**
  * @openapi

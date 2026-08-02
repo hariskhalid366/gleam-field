@@ -53,7 +53,13 @@ export type ApiTechnician = {
   rating: number;
   jobsCompleted: number;
   isAvailable: boolean;
-  user?: { name?: string; avatarUrl?: string; city?: string };
+  bio?: string;
+  verificationStatus?: "pending" | "under_review" | "approved" | "rejected" | "suspended";
+  reviewNotes?: string;
+  reviewedAt?: string;
+  createdAt?: string;
+  documents?: Array<{ kind: "id_card" | "certificate" | "insurance" | "background_check"; url: string; uploadedAt: string; verified: boolean }>;
+  user?: { name?: string; email?: string; phone?: string; avatarUrl?: string; city?: string; isActive?: boolean; createdAt?: string };
 };
 
 export type ApiSupportTicket = {
@@ -71,7 +77,18 @@ export type ApiSupportTicket = {
   updatedAt: string;
 };
 
+export type ApiUser = { _id: string; name: string; email: string; phone?: string; city?: string; avatarUrl?: string; role: string; isActive: boolean; createdAt: string };
+export type ApiReview = { _id: string; rating: number; comment?: string; isHidden: boolean; isReported: boolean; createdAt: string; customer?: { name?: string; avatarUrl?: string }; technician?: { user?: { name?: string } } };
+export type ApiPayment = { _id: string; amount: number; commission: number; tax: number; status: "paid" | "pending" | "refunded" | "failed"; method: string; date: string; customer?: { name?: string; email?: string }; booking?: { reference?: string; status?: string } };
+export type ApiContent = { _id: string; key: string; scope: "public" | "admin" | "system"; data: unknown; updatedAt: string };
+export type ApiAdminNotification = { _id: string; title: string; body: string; category: "booking" | "contact" | "technician" | "payment" | "system"; read: boolean; link?: string; createdAt: string };
+export type ApiReport = { range: "7d" | "30d" | "12m"; from: string; to: string; metrics: { revenue: number; commission: number; tax: number; bookings: number; customers: number; cancellationRate: number; averageRating: number; approvedTechnicians: number }; revenueSeries: Array<{ label: string; revenue: number }>; serviceDistribution: Array<{ name: string; value: number }> };
+
 export type PublicSiteContent = {
+  heroHeadline?: string;
+  heroSubcopy?: string;
+  siteAnnouncement?: string;
+  privacyNotice?: string;
   testimonials?: Array<{ id: number; name: string; role: string; avatar: string; rating: number; quote: string }>;
   trustedCompanies?: string[];
   pricingPlans?: Array<{ id: string; name: string; price: number; cadence: string; description: string; features: string[]; recommended: boolean }>;
@@ -233,6 +250,21 @@ async function uploadFile(file: File, purpose: "booking_photo"): Promise<{ fileI
   return (payload as { data: { fileId: string; url: string } }).data;
 }
 
+async function submitTechnicianApplication(input: {
+  name: string; email: string; phone: string; city: string; experienceYears: number; services: string[]; bio: string;
+  photo: File; idDocument: File; degreeCertificate: File;
+}): Promise<{ applicationId: string; status: string }> {
+  if (!apiConfigured) throw new ApiError("API base URL is not configured", 0);
+  const form = new FormData();
+  form.set("name", input.name); form.set("email", input.email); form.set("phone", input.phone); form.set("city", input.city);
+  form.set("experienceYears", String(input.experienceYears)); form.set("services", JSON.stringify(input.services)); form.set("bio", input.bio);
+  form.set("photo", input.photo); form.set("idDocument", input.idDocument); form.set("degreeCertificate", input.degreeCertificate);
+  const res = await fetch(`${API_BASE_URL}/technicians/apply`, { method: "POST", body: form, credentials: "include" });
+  const payload = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError((payload as { message?: string } | null)?.message ?? res.statusText, res.status);
+  return (payload as { data: { applicationId: string; status: string } }).data;
+}
+
 /* ------------------------------------------------------------------ *
  * Endpoint map — mirrors backend/src/routes.ts
  * ------------------------------------------------------------------ */
@@ -258,7 +290,7 @@ export const api = {
       }
     },
     refresh: () => refreshSession(),
-    me: () => apiRequest<AuthUser>("/auth/me"),
+    me: () => apiRequest<{ user: AuthUser; technician?: ApiTechnician | null }>("/auth/me"),
   },
   services: {
     list: () => apiRequest<ApiService[]>("/services", { auth: false }),
@@ -273,10 +305,17 @@ export const api = {
   technicians: {
     list: (q = "") => apiRequest<ApiTechnician[]>(`/technicians${q}`, { auth: false }),
     detail: (id: string) => apiRequest<ApiTechnician>(`/technicians/${id}`, { auth: false }),
+    adminList: (q = "") => apiRequest<ApiTechnician[]>(`/technicians/admin/list${q}`),
+    adminDetail: (id: string) => apiRequest<ApiTechnician>(`/technicians/admin/${id}`),
+    updateVerification: (id: string, status: "under_review" | "approved" | "rejected" | "suspended", reviewNotes?: string) =>
+      apiRequest<ApiTechnician>(`/technicians/${id}/verification`, { method: "PATCH", body: { status, reviewNotes } }),
+    apply: submitTechnicianApplication,
   },
   content: {
     publicSite: () => apiRequest<{ data: PublicSiteContent }>("/content/public.site", { auth: false }),
     whyUs: () => apiRequest<{ data: WhyUsContent }>("/content/public.why-us", { auth: false }),
+    admin: (key: string) => apiRequest<ApiContent>(`/content/admin/${key}`),
+    saveAdmin: (key: string, data: unknown, scope: "public" | "admin" | "system" = "admin") => apiRequest<ApiContent>(`/content/admin/${key}`, { method: "PUT", body: { scope, data } }),
   },
   bookings: {
     create: (body: BookingCreateInput) =>
@@ -288,6 +327,10 @@ export const api = {
       apiRequest<BookingTracking>(`/bookings/${id}`),
     cancel: (id: string, note?: string) =>
       apiRequest(`/bookings/${id}/status`, { method: "PATCH", body: { status: "cancelled", note } }),
+    updateStatus: (id: string, status: string, note?: string) =>
+      apiRequest(`/bookings/${id}/status`, { method: "PATCH", body: { status, note } }),
+    assign: (id: string, technician: string) =>
+      apiRequest(`/bookings/${id}/assign`, { method: "PATCH", body: { technician } }),
   },
   files: { uploadBookingPhoto: (file: File) => uploadFile(file, "booking_photo") },
   support: {
@@ -296,15 +339,32 @@ export const api = {
     contact: (body: { name: string; email: string; subject: string; message: string }) =>
       apiRequest<{ id: string; priority: string; repeatContact: boolean }>("/support/contact", { method: "POST", body, auth: false }),
     listTickets: () => apiRequest<ApiSupportTicket[]>("/support/tickets?limit=100"),
+    listContactSubmissions: () => apiRequest<ApiSupportTicket[]>("/support/contact-submissions?limit=100"),
     reply: (id: string, text: string) =>
       apiRequest<ApiSupportTicket>(`/support/tickets/${id}/messages`, { method: "POST", body: { text } }),
     updateTicket: (id: string, body: { status?: ApiSupportTicket["status"]; priority?: ApiSupportTicket["priority"] }) =>
       apiRequest<ApiSupportTicket>(`/support/tickets/${id}`, { method: "PATCH", body }),
   },
+  users: {
+    list: (q = "") => apiRequest<ApiUser[]>(`/users${q}`),
+    setActive: (id: string, isActive: boolean) => apiRequest<ApiUser>(`/users/${id}/status`, { method: "PATCH", body: { isActive } }),
+  },
+  reviews: {
+    adminList: (q = "") => apiRequest<ApiReview[]>(`/reviews/admin/list${q}`),
+    moderate: (id: string, body: { isHidden?: boolean; isReported?: boolean }) => apiRequest<ApiReview>(`/reviews/${id}/moderate`, { method: "PATCH", body }),
+  },
+  payments: { list: (q = "") => apiRequest<ApiPayment[]>(`/payments${q}`) },
+  notifications: {
+    list: (q = "") => apiRequest<ApiAdminNotification[]>(`/notifications${q}`),
+    markRead: (id: string, read: boolean) => apiRequest<ApiAdminNotification>(`/notifications/${id}/read`, { method: "PATCH", body: { read } }),
+    markAllRead: () => apiRequest("/notifications/read-all", { method: "PATCH" }),
+    sendToTechnicians: (title: string, body: string, technicianIds?: string[]) => apiRequest<{ delivered: number }>("/notifications/technicians", { method: "POST", body: { title, body, technicianIds } }),
+  },
   admin: {
-    dashboard: () => apiRequest("/admin/dashboard"),
+    dashboard: () => apiRequest<any>("/admin/dashboard"),
     stats: () => apiRequest("/admin/stats"),
-    bookings: (q = "") => apiRequest(`/admin/bookings${q}`),
+    bookings: (q = "") => apiRequest<any[]>(`/admin/bookings${q}`),
     calendar: (q = "") => apiRequest(`/admin/calendar${q}`),
+    report: (range: ApiReport["range"]) => apiRequest<ApiReport>(`/admin/reports?range=${range}`),
   },
 };

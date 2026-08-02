@@ -4,7 +4,7 @@ import { Lock, Mail, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { api, apiConfigured, startSession, tokenStore, userStore } from "@/lib/api";
+import { ApiError, api, apiConfigured, startSession } from "@/lib/api";
 
 export const Route = createFileRoute("/admin-login")({
   head: () => ({
@@ -23,27 +23,30 @@ function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!apiConfigured) {
+      setError("Admin login is unavailable until the backend API is configured.");
+      return;
+    }
+    setError("");
     setLoading(true);
     try {
-      if (apiConfigured) {
-        const res = await api.auth.login(email, password);
-        if (res.user && !["admin", "super_admin"].includes(res.user.role)) {
-          throw new Error("This account does not have admin access.");
-        }
-        startSession(res);
-        toast.success("Signed in");
-      } else {
-        tokenStore.set("demo-session");
-        userStore.set({ id: "demo", name: "Alex Rivera", email: email || "admin@servicepro.com", role: "admin" });
-        toast.success("Signed in (demo — API not configured)");
+      const res = await api.auth.login(email, password);
+      if (!res.user || !["admin", "super_admin"].includes(res.user.role)) {
+        await api.auth.logout();
+        throw new Error("This account does not have administrator access.");
       }
+      startSession(res);
+      toast.success("Signed in securely");
       navigate({ to: "/admin", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Unable to sign in");
+      const message = err instanceof ApiError && err.status === 401 ? "Invalid email or password." : err instanceof Error ? err.message : "Unable to sign in";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -82,7 +85,7 @@ function AdminLogin() {
                   required
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setError(""); }}
                   placeholder="you@company.com"
                   className="pl-9 h-11"
                 />
@@ -96,12 +99,13 @@ function AdminLogin() {
                   required
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
                   placeholder="••••••••"
                   className="pl-9 h-11"
                 />
               </div>
             </div>
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2">
@@ -109,7 +113,7 @@ function AdminLogin() {
               </label>
               <a href="#" className="font-medium text-primary hover:underline">Forgot password?</a>
             </div>
-            <Button className="w-full btn-press shadow-[var(--shadow-glow)]" size="lg" disabled={loading}>
+            <Button className="w-full btn-press shadow-[var(--shadow-glow)]" size="lg" disabled={loading || !email || !password}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
