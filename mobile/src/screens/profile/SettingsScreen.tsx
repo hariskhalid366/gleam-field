@@ -5,7 +5,7 @@ import { Card, ListRow, Screen, ScreenHeader } from "@/components";
 import type { ScreenProps } from "@/navigation/types";
 
 export default function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
-  const { colors, isDark, setScheme } = useTheme();
+  const { colors, isDark, setMode } = useTheme();
   const [push, setPush] = useState(true);
   const [jobAlerts, setJobAlerts] = useState(true);
   const [biometrics, setBiometrics] = useState(false);
@@ -32,7 +32,7 @@ export default function SettingsScreen({ navigation }: ScreenProps<"Settings">) 
         <ListRow
           glyph="🌙"
           label="Dark mode"
-          right={toggle(isDark, (v) => setScheme(v ? "dark" : "light"))}
+          right={toggle(isDark, (v) => setMode(v ? "dark" : "light"))}
         />
         <ListRow glyph="🌐" label="Language" description="English" onPress={() => Alert.alert("Language", "English · اردو")} />
       </Card>
