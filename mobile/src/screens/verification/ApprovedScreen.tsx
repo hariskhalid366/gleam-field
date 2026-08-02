@@ -12,7 +12,7 @@ export default function ApprovedScreen({ navigation }: ScreenProps<"Approved">) 
   const suspended = status === "suspended";
 
   return (
-    <Screen footer={<Button label="Go to dashboard" onPress={() => navigation.replace("Dashboard")} />}>
+    <Screen footer={<Button label="Go to dashboard" onPress={() => navigation.replace("Main")} />}>
       <View style={styles.hero}>
         <View style={[styles.badge, { backgroundColor: suspended ? colors.dangerSoft : colors.successSoft }]}>
           <Text style={{ fontSize: 48 }}>{suspended ? "⛔" : "🛡️"}</Text>
