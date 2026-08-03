@@ -21,7 +21,9 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Shell />
+          <AppDataProvider>
+            <Shell />
+          </AppDataProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
