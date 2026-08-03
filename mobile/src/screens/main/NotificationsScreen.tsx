@@ -64,29 +64,27 @@ export default function NotificationsScreen({ navigation }: ScreenProps<"Notific
       {list.length ? (
         <Card padded={false}>
           {list.map((n) => (
-            <Text
+            <Pressable
               key={n.id}
               accessibilityRole="button"
               onPress={() => open(n)}
-              style={{ padding: 0 }}
+              style={[styles.row, { borderBottomColor: colors.border }]}
             >
-              <View style={[styles.row, { borderBottomColor: colors.border }]}>
-                <View
-                  style={[
-                    styles.glyph,
-                    { backgroundColor: n.unread ? colors.primarySoft : colors.surfaceAlt },
-                  ]}
-                >
-                  <Text style={{ fontSize: 16 }}>{GLYPH[n.kind]}</Text>
-                </View>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[typography.bodyStrong, { color: colors.text }]}>{n.title}</Text>
-                  <Text style={[typography.caption, { color: colors.textMuted }]}>{n.body}</Text>
-                  <Text style={[typography.caption, { color: colors.textMuted, fontSize: 11 }]}>{n.time}</Text>
-                </View>
-                {n.unread ? <View style={[styles.dot, { backgroundColor: colors.primary }]} /> : null}
+              <View
+                style={[
+                  styles.glyph,
+                  { backgroundColor: n.unread ? colors.primarySoft : colors.surfaceAlt },
+                ]}
+              >
+                <Text style={{ fontSize: 16 }}>{GLYPH[n.kind]}</Text>
               </View>
-            </Text>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[typography.bodyStrong, { color: colors.text }]}>{n.title}</Text>
+                <Text style={[typography.caption, { color: colors.textMuted }]}>{n.body}</Text>
+                <Text style={[typography.caption, { color: colors.textMuted, fontSize: 11 }]}>{n.time}</Text>
+              </View>
+              {n.unread ? <View style={[styles.dot, { backgroundColor: colors.primary }]} /> : null}
+            </Pressable>
           ))}
         </Card>
       ) : (
