@@ -24,6 +24,16 @@ import NotificationsScreen from "@/screens/main/NotificationsScreen";
 import EarningsScreen from "@/screens/profile/EarningsScreen";
 import DocumentsScreen from "@/screens/profile/DocumentsScreen";
 import SettingsScreen from "@/screens/profile/SettingsScreen";
+import PersonalInfoScreen from "@/screens/profile/PersonalInfoScreen";
+import ProfessionalInfoScreen from "@/screens/profile/ProfessionalInfoScreen";
+import WorkingAreasScreen from "@/screens/profile/WorkingAreasScreen";
+import BankDetailsScreen from "@/screens/profile/BankDetailsScreen";
+import ChangePasswordScreen from "@/screens/profile/ChangePasswordScreen";
+import HelpSupportScreen from "@/screens/profile/HelpSupportScreen";
+import LegalScreen from "@/screens/profile/LegalScreen";
+import InvoiceScreen from "@/screens/jobs/InvoiceScreen";
+import JobHistoryScreen from "@/screens/jobs/JobHistoryScreen";
+import LeaveRequestsScreen from "@/screens/calendar/LeaveRequestsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
