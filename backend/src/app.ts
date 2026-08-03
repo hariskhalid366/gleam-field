@@ -49,3 +49,8 @@ export function createApp(): Express {
 
   return app;
 }
+
+// Export a ready-to-handle Express application for serverless adapters such as
+// Vercel. The named factory remains available to the standalone HTTP server.
+const app = createApp();
+export default app;

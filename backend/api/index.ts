@@ -1,10 +1,9 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-import { createApp } from "../src/app.js";
+import app from "../src/app.js";
 import { connectDatabase } from "../src/config/db.js";
 import { logger } from "../src/config/logger.js";
 
-const app = createApp();
 let connectionAttempt: Promise<void> | undefined;
 
 function ensureDatabaseConnection(): Promise<void> {
