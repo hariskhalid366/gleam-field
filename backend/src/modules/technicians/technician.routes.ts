@@ -128,6 +128,18 @@ technicianRouter.get(
   }),
 );
 
+/** Get the signed-in technician profile and verification status for mobile clients. */
+technicianRouter.get(
+  "/me",
+  authenticate,
+  authorize("technician"),
+  catchAsync(async (req, res) => {
+    const technician = await Technician.findOne({ user: req.user!.id }).populate("user", "name email phone city avatarUrl").lean();
+    if (!technician) throw ApiError.notFound("Technician profile not found");
+    return sendSuccess(res, technician, "Technician profile");
+  }),
+);
+
 /**
  * @openapi
  * /technicians/me:

@@ -50,6 +50,7 @@ adminRouter.get("/dashboard", authenticate, isAdmin, catchAsync(AdminController.
 
 adminRouter.get("/reports", authenticate, isAdmin, validate({ query: reportQuery }), catchAsync(AdminController.getReport));
 adminRouter.get("/reports/export", authenticate, isAdmin, validate({ query: reportQuery }), catchAsync(AdminController.exportReport));
+adminRouter.get("/reports/ai-summary", authenticate, isAdmin, validate({ query: reportQuery }), catchAsync(AdminController.getAiReportSummary));
 
 /**
  * @openapi

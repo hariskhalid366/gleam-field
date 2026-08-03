@@ -26,6 +26,11 @@ const envSchema = z.object({
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
 
   LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).default("info"),
+  // GIMINAI_API is retained for the existing local configuration. New installs
+  // should use the correctly named GEMINI_API_KEY.
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  GIMINAI_API: z.string().min(1).optional(),
+  GEMINI_REPORT_MODEL: z.string().min(1).default("gemini-2.0-flash"),
 });
 
 const parsed = envSchema.safeParse(process.env);

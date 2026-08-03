@@ -89,6 +89,7 @@ export type ApiPayment = { _id: string; amount: number; commission: number; tax:
 export type ApiContent = { _id: string; key: string; scope: "public" | "admin" | "system"; data: unknown; updatedAt: string };
 export type ApiAdminNotification = { _id: string; title: string; body: string; category: "booking" | "contact" | "technician" | "payment" | "system"; read: boolean; link?: string; createdAt: string };
 export type ApiReport = { range: "7d" | "30d" | "12m"; from: string; to: string; metrics: { revenue: number; commission: number; tax: number; bookings: number; customers: number; cancellationRate: number; averageRating: number; approvedTechnicians: number }; revenueSeries: Array<{ label: string; revenue: number }>; serviceDistribution: Array<{ name: string; value: number }> };
+export type ApiAiReportSummary = { overview: string; highlights: string[]; risks: string[]; recommendations: string[] };
 
 export type PublicSiteContent = {
   heroHeadline?: string;
@@ -376,5 +377,6 @@ export const api = {
     bookings: (q = "") => apiRequest<any[]>(`/admin/bookings${q}`),
     calendar: (q = "") => apiRequest(`/admin/calendar${q}`),
     report: (range: ApiReport["range"]) => apiRequest<ApiReport>(`/admin/reports?range=${range}`),
+    aiReportSummary: (range: ApiReport["range"]) => apiRequest<ApiAiReportSummary>(`/admin/reports/ai-summary?range=${range}`),
   },
 };

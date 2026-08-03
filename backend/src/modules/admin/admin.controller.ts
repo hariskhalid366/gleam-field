@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { AdminService } from "./admin.service.js";
 import { sendSuccess, sendPaginated } from "../../utils/response.js";
+import { generateAiReportSummary } from "./ai-report.service.js";
 
 export class AdminController {
   static async getDashboard(req: Request, res: Response) {
@@ -56,5 +57,11 @@ export class AdminController {
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="servicepro-report-${report.range}.csv"`);
     return res.send(csv);
+  }
+
+  static async getAiReportSummary(req: Request, res: Response) {
+    const report = await AdminService.getReportData(req.query.range as "7d" | "30d" | "12m");
+    const summary = await generateAiReportSummary(report);
+    return sendSuccess(res, summary, "AI report summary generated");
   }
 }

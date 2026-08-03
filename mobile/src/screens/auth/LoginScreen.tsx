@@ -1,37 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { useTheme } from "@/theme/ThemeProvider";
 import { spacing, typography } from "@/theme";
 import { Banner, Button, Input, Screen } from "@/components";
-import { useAuth } from "@/context/AuthContext";
 import type { ScreenProps } from "@/navigation/types";
+import { useLoginController } from "./useLoginController";
 
 export default function LoginScreen({ navigation }: ScreenProps<"Login">) {
   const { colors } = useTheme();
-  const { login, loading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
-  const [secure, setSecure] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const valid = /\S+@\S+\.\S+/.test(email) && password.length >= 6;
-
-  const onSubmit = async () => {
-    setError(null);
-    try {
-      await login(email.trim(), password);
-      // RootNavigator swaps the stack as soon as status changes.
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong. Try again.");
-    }
-  };
+  const { values, functions } = useLoginController();
 
   return (
     <Screen
       footer={
         <>
-          <Button label="Log in" onPress={onSubmit} disabled={!valid} loading={loading} />
+          <Button label="Log in" onPress={functions.submit} disabled={!values.valid} loading={values.loading} />
           <Pressable onPress={() => navigation.navigate("Registration")} accessibilityRole="button">
             <Text style={[typography.caption, { color: colors.textMuted, textAlign: "center" }]}>
               New to ServicePro? <Text style={{ color: colors.primary, fontWeight: "700" }}>Apply as a technician</Text>
@@ -47,7 +30,7 @@ export default function LoginScreen({ navigation }: ScreenProps<"Login">) {
         </Text>
       </View>
 
-      {error ? <Banner tone="danger" glyph="⚠️" title="Couldn't log you in" message={error} /> : null}
+      {values.error ? <Banner tone="danger" glyph="⚠️" title="Couldn't log you in" message={values.error} /> : null}
 
       <Input
         label="Email address"
@@ -56,20 +39,20 @@ export default function LoginScreen({ navigation }: ScreenProps<"Login">) {
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
-        value={email}
-        onChangeText={setEmail}
+        value={values.email}
+        onChangeText={functions.setEmail}
       />
       <Input
         label="Password"
         required
         placeholder="••••••••"
-        secureTextEntry={secure}
+        secureTextEntry={values.secure}
         autoComplete="password"
-        value={password}
-        onChangeText={setPassword}
+        value={values.password}
+        onChangeText={functions.setPassword}
         right={
-          <Pressable onPress={() => setSecure((s) => !s)} hitSlop={10} accessibilityRole="button">
-            <Text style={[typography.caption, { color: colors.primary }]}>{secure ? "Show" : "Hide"}</Text>
+          <Pressable onPress={functions.toggleSecure} hitSlop={10} accessibilityRole="button">
+            <Text style={[typography.caption, { color: colors.primary }]}>{values.secure ? "Show" : "Hide"}</Text>
           </Pressable>
         }
       />
@@ -77,8 +60,8 @@ export default function LoginScreen({ navigation }: ScreenProps<"Login">) {
       <View style={styles.row}>
         <View style={styles.rowLeft}>
           <Switch
-            value={remember}
-            onValueChange={setRemember}
+            value={values.remember}
+            onValueChange={functions.setRemember}
             trackColor={{ true: colors.primary, false: colors.border }}
           />
           <Text style={[typography.caption, { color: colors.text }]}>Keep me signed in</Text>
@@ -90,12 +73,6 @@ export default function LoginScreen({ navigation }: ScreenProps<"Login">) {
         </Pressable>
       </View>
 
-      <Banner
-        tone="info"
-        glyph="💡"
-        title="Demo accounts"
-        message="pending@demo.com → waiting screen · rejected@demo.com → rejection screen · blocked@demo.com → login blocked · anything else → approved. Password: any 6+ characters."
-      />
     </Screen>
   );
 }

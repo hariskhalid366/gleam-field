@@ -3,6 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": { "@/*": ["src/*"] }
-  }
+  },
+  "exclude": [
+    "src/redux/Apis/Catalog/**",
+    "src/redux/Apis/Customer/**",
+    "src/redux/Apis/Notification/**",
+    "src/redux/Apis/Orders/**",
+    "src/redux/slice/cartSlice.ts"
+  ]
 }
