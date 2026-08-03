@@ -1,0 +1,20 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    # Keep the API private; the host Nginx proxy is the public HTTPS endpoint.
+    ports:
+      - "127.0.0.1:${HOST_PORT:-4000}:4000"
+    volumes:
+      - api-uploads:/app/public/uploads
+      - api-logs:/app/logs
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  api-uploads:
+  api-logs:

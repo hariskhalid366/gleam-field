@@ -24,6 +24,26 @@ docker compose up --build
 
 API docs: `http://localhost:4000/docs` · OpenAPI JSON: `/docs.json`
 
+## Production deployment (Ubuntu VPS + Docker)
+
+The production Compose file runs only the API. Use MongoDB Atlas or another managed MongoDB service; do not expose a database port from this server. Uploaded files and logs are kept in Docker volumes, so they survive container replacements.
+
+```bash
+# On the server, from the backend directory
+cp .env.production.example .env
+nano .env                         # set MongoDB URI, two new JWT secrets, and CORS_ORIGINS
+docker compose -f docker-compose.production.yml up -d --build
+curl http://127.0.0.1:4000/api/v1/health
+```
+
+Configure Nginx with `deploy/nginx-api.conf.example`, replacing `api.example.com`, then issue TLS with Certbot. Point the frontend build to `VITE_API_BASE_URL=https://api.example.com/api/v1` and rebuild/redeploy the frontend.
+
+Before going live, add the server's IP to the MongoDB network allowlist and rotate any database password or JWT secret that was previously shared. Verify the public endpoint after TLS is enabled:
+
+```bash
+curl https://api.example.com/api/v1/health
+```
+
 ## Layout
 
 ```

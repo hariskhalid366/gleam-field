@@ -14,7 +14,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
-# Run unprivileged
+# Persisted runtime directories must be writable after dropping root privileges.
+RUN mkdir -p /app/public/uploads /app/logs \
+  && chown -R node:node /app
+# Run unprivileged.
 USER node
 EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s \
