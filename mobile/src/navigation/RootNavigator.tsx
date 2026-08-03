@@ -93,6 +93,16 @@ export function RootNavigator() {
             <Stack.Screen name="Earnings" component={EarningsScreen} />
             <Stack.Screen name="Documents" component={DocumentsScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+            <Stack.Screen name="ProfessionalInfo" component={ProfessionalInfoScreen} />
+            <Stack.Screen name="WorkingAreas" component={WorkingAreasScreen} />
+            <Stack.Screen name="BankDetails" component={BankDetailsScreen} />
+            <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+            <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+            <Stack.Screen name="Legal" component={LegalScreen} />
+            <Stack.Screen name="Invoice" component={InvoiceScreen} />
+            <Stack.Screen name="JobHistory" component={JobHistoryScreen} />
+            <Stack.Screen name="LeaveRequests" component={LeaveRequestsScreen} />
           </Stack.Group>
         )}
       </Stack.Navigator>
