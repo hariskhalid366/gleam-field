@@ -24,6 +24,16 @@ import NotificationsScreen from "@/screens/main/NotificationsScreen";
 import EarningsScreen from "@/screens/profile/EarningsScreen";
 import DocumentsScreen from "@/screens/profile/DocumentsScreen";
 import SettingsScreen from "@/screens/profile/SettingsScreen";
+import PersonalInfoScreen from "@/screens/profile/PersonalInfoScreen";
+import ProfessionalInfoScreen from "@/screens/profile/ProfessionalInfoScreen";
+import WorkingAreasScreen from "@/screens/profile/WorkingAreasScreen";
+import BankDetailsScreen from "@/screens/profile/BankDetailsScreen";
+import ChangePasswordScreen from "@/screens/profile/ChangePasswordScreen";
+import HelpSupportScreen from "@/screens/profile/HelpSupportScreen";
+import LegalScreen from "@/screens/profile/LegalScreen";
+import InvoiceScreen from "@/screens/jobs/InvoiceScreen";
+import JobHistoryScreen from "@/screens/jobs/JobHistoryScreen";
+import LeaveRequestsScreen from "@/screens/calendar/LeaveRequestsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -83,6 +93,16 @@ export function RootNavigator() {
             <Stack.Screen name="Earnings" component={EarningsScreen} />
             <Stack.Screen name="Documents" component={DocumentsScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+            <Stack.Screen name="ProfessionalInfo" component={ProfessionalInfoScreen} />
+            <Stack.Screen name="WorkingAreas" component={WorkingAreasScreen} />
+            <Stack.Screen name="BankDetails" component={BankDetailsScreen} />
+            <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+            <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+            <Stack.Screen name="Legal" component={LegalScreen} />
+            <Stack.Screen name="Invoice" component={InvoiceScreen} />
+            <Stack.Screen name="JobHistory" component={JobHistoryScreen} />
+            <Stack.Screen name="LeaveRequests" component={LeaveRequestsScreen} />
           </Stack.Group>
         )}
       </Stack.Navigator>

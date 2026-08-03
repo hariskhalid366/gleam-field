@@ -115,7 +115,7 @@ export default function CalendarScreen({ navigation }: TabScreenProps<"Calendar"
             />
           }
         />
-        <Button label="Request leave" variant="secondary" onPress={() => setVacation(true)} />
+        <Button label="Leave requests" variant="secondary" onPress={() => navigation.navigate("LeaveRequests")} />
       </Card>
     </Screen>
   );

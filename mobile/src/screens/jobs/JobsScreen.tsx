@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import { spacing } from "@/theme";
 import { Button, EmptyState, JobCard, Screen, ScreenHeader, Segmented, SkeletonList } from "@/components";
-import { JOBS, type Job } from "@/data/jobs";
+import { useAppData } from "@/context/AppDataContext";
+import type { Job } from "@/data/jobs";
 import type { TabScreenProps } from "@/navigation/types";
 
 type Filter = "requests" | "active" | "upcoming" | "completed" | "cancelled";
@@ -24,31 +25,52 @@ const MATCH: Record<Filter, (j: Job) => boolean> = {
 };
 
 export default function JobsScreen({ navigation, route }: TabScreenProps<"Jobs">) {
+  const { jobs, acceptJob, declineJob } = useAppData();
   const [filter, setFilter] = useState<Filter>(route.params?.filter ?? "requests");
   const [refreshing, setRefreshing] = useState(false);
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const jobs = useMemo(() => JOBS.filter(MATCH[filter]), [filter]);
+  const list = useMemo(() => jobs.filter(MATCH[filter]), [jobs, filter]);
 
   const refresh = () => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 800);
   };
 
+  const changeFilter = (f: Filter) => {
+    setFilter(f);
+    setLoading(true);
+    setTimeout(() => setLoading(false), 350);
+  };
+
+  const decline = (job: Job) =>
+    Alert.alert("Decline job", `Decline ${job.reference}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Decline",
+        style: "destructive",
+        onPress: () => declineJob(job.id, "Declined from list"),
+      },
+    ]);
+
   return (
     <Screen refreshing={refreshing} onRefresh={refresh}>
-      <ScreenHeader title="Jobs" subtitle="Requests, active work and history" />
+      <ScreenHeader
+        title="Jobs"
+        subtitle="Requests, active work and history"
+        right={<Button label="History" variant="ghost" size="md" fullWidth={false} onPress={() => navigation.navigate("JobHistory")} />}
+      />
       <Segmented
-        options={FILTERS.map((f) => ({ ...f, count: JOBS.filter(MATCH[f.value]).length }))}
+        options={FILTERS.map((f) => ({ ...f, count: jobs.filter(MATCH[f.value]).length }))}
         value={filter}
-        onChange={setFilter}
+        onChange={changeFilter}
       />
 
       {loading ? (
         <SkeletonList rows={3} />
-      ) : jobs.length ? (
+      ) : list.length ? (
         <View style={{ gap: spacing.sm }}>
-          {jobs.map((job) => (
+          {list.map((job) => (
             <JobCard
               key={job.id}
               job={job}
@@ -62,14 +84,17 @@ export default function JobsScreen({ navigation, route }: TabScreenProps<"Jobs">
                       size="md"
                       fullWidth={false}
                       style={{ flex: 1 }}
-                      onPress={() => navigation.navigate("JobDetail", { jobId: job.id })}
+                      onPress={() => decline(job)}
                     />
                     <Button
                       label="Accept"
                       size="md"
                       fullWidth={false}
                       style={{ flex: 1 }}
-                      onPress={() => navigation.navigate("JobDetail", { jobId: job.id })}
+                      onPress={() => {
+                        acceptJob(job.id);
+                        navigation.navigate("JobDetail", { jobId: job.id });
+                      }}
                     />
                   </View>
                 ) : null

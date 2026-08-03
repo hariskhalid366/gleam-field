@@ -4,16 +4,18 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { spacing, typography } from "@/theme";
 import { BarChart, Button, Card, Row, Screen, ScreenHeader, Segmented, StatCard } from "@/components";
 import { EARNINGS, fmtPKR } from "@/data/jobs";
+import { useAppData } from "@/context/AppDataContext";
 import type { ScreenProps } from "@/navigation/types";
 
 export default function EarningsScreen({ navigation }: ScreenProps<"Earnings">) {
   const { colors } = useTheme();
+  const { transactions, pendingPayout, withdraw } = useAppData();
   const [range, setRange] = useState<"today" | "week" | "month">("week");
   const total = EARNINGS[range];
   const commission = Math.round(total * EARNINGS.commissionRate);
 
   return (
-    <Screen footer={<Button label="Withdraw to bank" onPress={() => undefined} />}>
+    <Screen footer={<Button label={`Withdraw ${fmtPKR(pendingPayout)}`} disabled={pendingPayout <= 0} onPress={() => withdraw(pendingPayout)} />}>
       <ScreenHeader title="Earnings" subtitle="Payouts, commission and history" onBack={() => navigation.goBack()} />
 
       <Segmented
@@ -28,7 +30,7 @@ export default function EarningsScreen({ navigation }: ScreenProps<"Earnings">) 
 
       <View style={styles.stats}>
         <StatCard label="Net earnings" value={fmtPKR(total - commission)} tone="primary" />
-        <StatCard label="Pending payout" value={fmtPKR(EARNINGS.pendingPayout)} tone="success" />
+        <StatCard label="Pending payout" value={fmtPKR(pendingPayout)} tone="success" />
       </View>
 
       <Card title="This week" subtitle="Daily breakdown">
@@ -42,7 +44,7 @@ export default function EarningsScreen({ navigation }: ScreenProps<"Earnings">) 
       </Card>
 
       <Card title="Transactions">
-        {EARNINGS.transactions.map((t) => (
+        {transactions.map((t) => (
           <View key={t.id} style={[styles.tx, { borderBottomColor: colors.border }]}>
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[typography.bodyStrong, { color: colors.text }]}>{t.label}</Text>

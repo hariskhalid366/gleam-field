@@ -38,10 +38,10 @@ export default function SettingsScreen({ navigation }: ScreenProps<"Settings">) 
       </Card>
 
       <Card title="Security" padded={false} style={{ paddingHorizontal: 16 }}>
-        <ListRow glyph="🔑" label="Change password" onPress={() => Alert.alert("Change password", "Password form opens here.")} />
+        <ListRow glyph="🔑" label="Change password" onPress={() => navigation.navigate("ChangePassword")} />
         <ListRow glyph="🫆" label="Biometric login" right={toggle(biometrics, setBiometrics)} />
         <ListRow glyph="📍" label="Location permission" right={toggle(location, setLocation)} />
-        <ListRow glyph="🛡" label="Privacy settings" onPress={() => Alert.alert("Privacy", "Data sharing preferences.")} />
+        <ListRow glyph="🛡" label="Privacy settings" onPress={() => navigation.navigate("Legal", { doc: "privacy" })} />
       </Card>
 
       <Card title="About" padded={false} style={{ paddingHorizontal: 16 }}>
