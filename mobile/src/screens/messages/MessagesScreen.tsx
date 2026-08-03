@@ -3,20 +3,21 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/theme/ThemeProvider";
 import { radii, spacing, typography } from "@/theme";
 import { Card, EmptyState, Input, Screen, ScreenHeader, Segmented } from "@/components";
-import { CONVERSATIONS } from "@/data/jobs";
+import { useAppData } from "@/context/AppDataContext";
 import type { TabScreenProps } from "@/navigation/types";
 
 export default function MessagesScreen({ navigation }: TabScreenProps<"Messages">) {
   const { colors } = useTheme();
+  const { conversations } = useAppData();
   const [tab, setTab] = useState<"all" | "customer" | "admin">("all");
   const [query, setQuery] = useState("");
 
   const list = useMemo(
     () =>
-      CONVERSATIONS.filter((c) => (tab === "all" ? true : c.role === tab)).filter((c) =>
+      conversations.filter((c) => (tab === "all" ? true : c.role === tab)).filter((c) =>
         c.name.toLowerCase().includes(query.trim().toLowerCase()),
       ),
-    [tab, query],
+    [conversations, tab, query],
   );
 
   return (

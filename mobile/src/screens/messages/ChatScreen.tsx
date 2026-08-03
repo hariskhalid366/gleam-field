@@ -1,20 +1,24 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useTheme } from "@/theme/ThemeProvider";
 import { radii, spacing, typography } from "@/theme";
 import { EmptyState, Screen, ScreenHeader } from "@/components";
-import { CONVERSATIONS } from "@/data/jobs";
+import { useAppData } from "@/context/AppDataContext";
 import type { ScreenProps } from "@/navigation/types";
 
 type Msg = { id: string; from: "me" | "them"; text: string; time: string; kind?: string };
 
 export default function ChatScreen({ navigation, route }: ScreenProps<"Chat">) {
   const { colors } = useTheme();
+  const { conversations, sendMessage, openConversation } = useAppData();
   const convo = useMemo(
-    () => CONVERSATIONS.find((c) => c.id === route.params.conversationId),
-    [route.params.conversationId],
+    () => conversations.find((c) => c.id === route.params.conversationId),
+    [conversations, route.params.conversationId],
   );
-  const [messages, setMessages] = useState<Msg[]>(convo?.messages ?? []);
+  useEffect(() => {
+    openConversation(route.params.conversationId);
+  }, [openConversation, route.params.conversationId]);
+  const messages: Msg[] = convo?.messages ?? [];
   const [draft, setDraft] = useState("");
 
   if (!convo) {
@@ -28,10 +32,7 @@ export default function ChatScreen({ navigation, route }: ScreenProps<"Chat">) {
 
   const send = (text: string, kind?: string) => {
     if (!text.trim()) return;
-    setMessages((m) => [
-      ...m,
-      { id: `m${m.length + 1}`, from: "me", text, kind, time: "now" },
-    ]);
+    sendMessage(route.params.conversationId, text, kind);
     setDraft("");
   };
 

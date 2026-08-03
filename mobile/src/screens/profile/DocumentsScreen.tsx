@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { spacing } from "@/theme";
 import { Banner, Card, Screen, ScreenHeader, StatusChip, UploadCard, type UploadValue } from "@/components";
-import { DOCUMENTS } from "@/data/jobs";
+import { useAppData } from "@/context/AppDataContext";
 import type { ScreenProps } from "@/navigation/types";
 
 const TONE: Record<string, "success" | "warning" | "neutral"> = {
@@ -18,16 +18,18 @@ const LABEL: Record<string, string> = {
 };
 
 export default function DocumentsScreen({ navigation }: ScreenProps<"Documents">) {
+  const { documents, replaceDocument } = useAppData();
   const [uploads, setUploads] = useState<Record<string, UploadValue | null>>({});
 
   const pick = (id: string, name: string) => {
     setUploads((u) => ({ ...u, [id]: { name, size: "1.8 MB", status: "uploading" } }));
     setTimeout(
       () =>
+        (replaceDocument(id),
         setUploads((u) => ({
           ...u,
           [id]: { name, size: "1.8 MB", status: "uploaded", uploadedAt: new Date().toISOString() },
-        })),
+        }))),
       900,
     );
   };
@@ -43,7 +45,7 @@ export default function DocumentsScreen({ navigation }: ScreenProps<"Documents">
       />
 
       <View style={{ gap: spacing.md }}>
-        {DOCUMENTS.map((d) => (
+        {documents.map((d) => (
           <Card
             key={d.id}
             title={d.label}

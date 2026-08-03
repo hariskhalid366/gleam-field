@@ -15,20 +15,21 @@ import {
   StatusChip,
 } from "@/components";
 import { useAuth } from "@/context/AuthContext";
-import { ACTIVITIES, EARNINGS, JOBS, NOTIFICATIONS, PERFORMANCE, fmtPKR } from "@/data/jobs";
+import { EARNINGS, PERFORMANCE, fmtPKR } from "@/data/jobs";
+import { useAppData } from "@/context/AppDataContext";
 import type { TabScreenProps } from "@/navigation/types";
 
 export default function DashboardScreen({ navigation }: TabScreenProps<"Dashboard">) {
   const { colors } = useTheme();
   const { technician, status } = useAuth();
   const suspended = status === "suspended";
-  const [online, setOnline] = useState(!suspended);
+  const { jobs, online, setOnline, unreadCount, activities } = useAppData();
   const [refreshing, setRefreshing] = useState(false);
 
-  const requests = JOBS.filter((j) => j.status === "pending");
-  const today = JOBS.filter((j) => j.scheduledFor === "Today" && j.status !== "pending");
-  const upcoming = JOBS.filter((j) => j.scheduledFor === "Tomorrow");
-  const unread = NOTIFICATIONS.filter((n) => n.unread).length;
+  const requests = jobs.filter((j) => j.status === "pending");
+  const today = jobs.filter((j) => j.scheduledFor === "Today" && j.status !== "pending");
+  const upcoming = jobs.filter((j) => j.scheduledFor === "Tomorrow");
+  const unread = unreadCount;
 
   const refresh = () => {
     setRefreshing(true);
@@ -176,7 +177,7 @@ export default function DashboardScreen({ navigation }: TabScreenProps<"Dashboar
 
       <Card title="Recent activity">
         <View style={{ gap: spacing.sm }}>
-          {ACTIVITIES.map((a) => (
+          {activities.map((a) => (
             <View key={a.id} style={styles.activity}>
               <Text style={{ fontSize: 16 }}>{a.glyph}</Text>
               <Text style={[typography.body, { color: colors.text, flex: 1 }]}>{a.text}</Text>
