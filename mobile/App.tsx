@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, useTheme } from "@/theme/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import { AppDataProvider } from "@/context/AppDataContext";
 import { RootNavigator } from "@/navigation/RootNavigator";
 
 function Shell() {
