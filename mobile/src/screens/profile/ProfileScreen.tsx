@@ -56,20 +56,20 @@ export default function ProfileScreen({ navigation }: TabScreenProps<"Profile">)
       </Card>
 
       <Card title="Account" padded={false} style={{ paddingHorizontal: spacing.md }}>
-        <ListRow glyph="🧑" label="Personal information" description="Name, CNIC, date of birth" onPress={() => Alert.alert("Personal information", "Editable profile form.")} />
-        <ListRow glyph="🛠" label="Professional details" description="Headline, bio, experience" onPress={() => Alert.alert("Professional details", "Editable profile form.")} />
-        <ListRow glyph="📍" label="Working areas & radius" description="Karachi · 10 km" onPress={() => Alert.alert("Coverage", "Area and radius editor.")} />
-        <ListRow glyph="🗣" label="Languages" description="Urdu, English" onPress={() => Alert.alert("Languages", "Language selector.")} />
-        <ListRow glyph="🏦" label="Bank details" description="HBL ••••4421" onPress={() => Alert.alert("Bank details", "Payout account editor.")} />
+        <ListRow glyph="🧑" label="Personal information" description="Name, CNIC, date of birth" onPress={() => navigation.navigate("PersonalInfo")} />
+        <ListRow glyph="🛠" label="Professional details" description="Headline, bio, experience" onPress={() => navigation.navigate("ProfessionalInfo")} />
+        <ListRow glyph="📍" label="Working areas & radius" description="Coverage and languages" onPress={() => navigation.navigate("WorkingAreas")} />
+        <ListRow glyph="🏦" label="Bank details" description="Payout account" onPress={() => navigation.navigate("BankDetails")} />
         <ListRow glyph="📄" label="Documents" description="Verification status" onPress={() => navigation.navigate("Documents")} />
+        <ListRow glyph="🗂" label="Job history" onPress={() => navigation.navigate("JobHistory")} />
         <ListRow glyph="💳" label="Earnings & payouts" onPress={() => navigation.navigate("Earnings")} />
       </Card>
 
       <Card title="App" padded={false} style={{ paddingHorizontal: spacing.md }}>
         <ListRow glyph="⚙️" label="Settings" onPress={() => navigation.navigate("Settings")} />
-        <ListRow glyph="🛟" label="Help & support" onPress={() => navigation.navigate("Chat", { conversationId: "c2" })} />
-        <ListRow glyph="🔒" label="Privacy policy" onPress={() => Alert.alert("Privacy", "Opens the privacy policy.")} />
-        <ListRow glyph="📃" label="Terms of service" onPress={() => Alert.alert("Terms", "Opens the terms of service.")} />
+        <ListRow glyph="🛟" label="Help & support" onPress={() => navigation.navigate("HelpSupport")} />
+        <ListRow glyph="🔒" label="Privacy policy" onPress={() => navigation.navigate("Legal", { doc: "privacy" })} />
+        <ListRow glyph="📃" label="Terms of service" onPress={() => navigation.navigate("Legal", { doc: "terms" })} />
       </Card>
 
       <Card padded={false} style={{ paddingHorizontal: spacing.md }}>
