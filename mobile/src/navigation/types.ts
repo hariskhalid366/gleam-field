@@ -30,6 +30,16 @@ export type RootStackParamList = {
   Earnings: undefined;
   Documents: undefined;
   Settings: undefined;
+  PersonalInfo: undefined;
+  ProfessionalInfo: undefined;
+  WorkingAreas: undefined;
+  BankDetails: undefined;
+  ChangePassword: undefined;
+  HelpSupport: undefined;
+  Legal: { doc: "privacy" | "terms" };
+  Invoice: { jobId: string };
+  JobHistory: undefined;
+  LeaveRequests: undefined;
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<
