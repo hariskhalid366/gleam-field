@@ -156,6 +156,9 @@
 @layer base {
   * { border-color: var(--color-border); }
   html { font-family: var(--font-sans); }
+  /* Prevent browser-specific sectioned-heading defaults and keep all heading
+     sizing controlled by the explicit Tailwind classes used in each view. */
+  h1 { margin: 0; font-size: inherit; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

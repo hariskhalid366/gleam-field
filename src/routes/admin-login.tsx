@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock, Mail, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,11 +20,13 @@ export const Route = createFileRoute("/admin-login")({
 });
 
 function AdminLogin() {
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  useEffect(() => { setMounted(true); }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +78,7 @@ function AdminLogin() {
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Welcome back.</h1>
           <p className="mt-2 text-sm text-muted-foreground">This portal is for business administrators only.</p>
 
-          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+          {!mounted ? <div className="mt-8 h-[310px] animate-pulse rounded-2xl bg-muted/50" aria-busy="true" /> : <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Work email</label>
               <div className="relative">
@@ -116,7 +118,7 @@ function AdminLogin() {
             <Button className="w-full btn-press shadow-[var(--shadow-glow)]" size="lg" disabled={loading || !email || !password}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>
-          </form>
+          </form>}
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
             Not an admin? <Link to="/" className="font-medium text-primary hover:underline">Return home</Link>

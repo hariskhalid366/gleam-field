@@ -47,6 +47,8 @@ export async function generateAiReportSummary(report: Awaited<ReturnType<typeof 
   }
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) throw new ApiError(503, "AI report credentials were rejected. Check GEMINI_API_KEY.");
+    if (response.status === 429) throw new ApiError(429, "Gemini quota is exhausted. Check your Gemini API plan, billing, or rate limits and try again later.");
+    if (response.status === 404) throw new ApiError(503, "The configured Gemini model is unavailable. Check GEMINI_REPORT_MODEL.");
     throw new ApiError(503, "AI report service is temporarily unavailable");
   }
   const payload = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };

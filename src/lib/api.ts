@@ -327,6 +327,7 @@ export const api = {
     whyUs: () => apiRequest<{ data: WhyUsContent }>("/content/public.why-us", { auth: false }),
     admin: (key: string) => apiRequest<ApiContent>(`/content/admin/${key}`),
     saveAdmin: (key: string, data: unknown, scope: "public" | "admin" | "system" = "admin") => apiRequest<ApiContent>(`/content/admin/${key}`, { method: "PUT", body: { scope, data } }),
+    generateWhyUs: () => apiRequest<WhyUsContent>("/content/admin/public.why-us/generate", { method: "POST" }),
   },
   bookings: {
     create: (body: BookingCreateInput) =>

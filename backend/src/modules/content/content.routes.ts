@@ -6,6 +6,7 @@ import { validate } from "../../middleware/validate.js";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { sendSuccess } from "../../utils/response.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { generateWhyUsContent } from "./ai-content.service.js";
 
 export const contentRouter = Router();
 
@@ -23,6 +24,19 @@ contentRouter.get(
     const content = await Content.findOne({ key: req.params.key, scope: "public" }).lean();
     if (!content) throw ApiError.notFound("Content not found");
     return sendSuccess(res, content, "Content");
+  }),
+);
+
+contentRouter.post(
+  "/admin/:key/generate",
+  authenticate,
+  isAdmin,
+  validate({ params: keySchema }),
+  catchAsync(async (req, res) => {
+    if (req.params.key !== "public.why-us") throw ApiError.notFound("AI generation is not available for this content block");
+    const content = await Content.findOne({ key: req.params.key }).lean();
+    const draft = await generateWhyUsContent(content?.data);
+    return sendSuccess(res, draft, "AI Why Us draft generated");
   }),
 );
 
