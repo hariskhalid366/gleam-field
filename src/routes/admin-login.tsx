@@ -4,7 +4,7 @@ import { Lock, Mail, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ApiError, api, apiConfigured, startSession } from "@/lib/api";
+import { ApiError, api, apiConfigured, isAuthenticated, startSession } from "@/lib/api";
 
 export const Route = createFileRoute("/admin-login")({
   head: () => ({
@@ -26,7 +26,15 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    // Do not show the sign-in screen again when a session is already stored.
+    // /admin performs the server-side role and token validation.
+    if (isAuthenticated()) {
+      navigate({ to: "/admin", replace: true });
+      return;
+    }
+    setMounted(true);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
