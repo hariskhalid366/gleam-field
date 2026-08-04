@@ -66,18 +66,18 @@ function LandingPage() {
   });
   const offline = !apiConfigured;
   const homepage = {
-    services: data?.liveServices.map(toDisplayService) ?? (offline ? services : []),
-    technicians: data?.liveTechnicians.map(toHomepageTechnician) ?? (offline ? technicians : []),
-    testimonials: data?.content.testimonials ?? (offline ? testimonials : []),
-    trustedCompanies: data?.content.trustedCompanies ?? (offline ? trustedCompanies : []),
-    pricingPlans: data?.content.pricingPlans ?? (offline ? pricingPlans : []),
-    faqs: data?.content.faqs ?? (offline ? faqs : []),
+    services: data?.liveServices?.map(toDisplayService) ?? (offline ? services : []),
+    technicians: data?.liveTechnicians?.map(toHomepageTechnician) ?? (offline ? technicians : []),
+    testimonials: data?.content?.testimonials ?? (offline ? testimonials : []),
+    trustedCompanies: data?.content?.trustedCompanies ?? (offline ? trustedCompanies : []),
+    pricingPlans: data?.content?.pricingPlans ?? (offline ? pricingPlans : []),
+    faqs: data?.content?.faqs ?? (offline ? faqs : []),
   };
 
   return (
     <>
       {isError && <div role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">Live website content is temporarily unavailable. Please refresh or try again shortly.</div>}
-      <Hero headline={data?.content.heroHeadline} subcopy={data?.content.heroSubcopy} announcement={data?.content.siteAnnouncement} useDefaults={offline} />
+      <Hero headline={data?.content?.heroHeadline} subcopy={data?.content?.heroSubcopy} announcement={data?.content?.siteAnnouncement} useDefaults={offline} />
       <TrustedStrip companies={homepage.trustedCompanies} />
       <Services items={homepage.services} />
       <WhyUs />
@@ -401,11 +401,17 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 
 function Testimonials({ items }: { items: typeof testimonials }) {
   const [idx, setIdx] = useState(0);
+  // CMS records are editable. Ignore incomplete entries rather than allowing a
+  // single malformed record to crash the entire homepage carousel.
+  const safeItems = items.filter((item): item is (typeof testimonials)[number] => Boolean(item && item.quote && item.name && item.role));
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 6000);
+    if (safeItems.length < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % safeItems.length), 6000);
     return () => clearInterval(t);
-  }, [items.length]);
-  const t = items[idx] ?? items[0]!;
+  }, [safeItems.length]);
+  useEffect(() => { if (idx >= safeItems.length) setIdx(0); }, [idx, safeItems.length]);
+  const t = safeItems[idx] ?? safeItems[0];
+  if (!t) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
       <SectionHeader eyebrow="Customers" title="Loved by homeowners and enterprises alike." />
@@ -424,7 +430,7 @@ function Testimonials({ items }: { items: typeof testimonials }) {
             </div>
           </div>
           <div className="mt-6 flex gap-2">
-            {items.map((_, i) => (
+            {safeItems.map((_, i) => (
               <button
                 key={i}
                 aria-label={`Testimonial ${i + 1}`}
@@ -435,7 +441,7 @@ function Testimonials({ items }: { items: typeof testimonials }) {
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {items.slice(0, 4).map((tt) => (
+          {safeItems.slice(0, 4).map((tt) => (
             <div key={tt.id} className="card-elevated card-elevated-hover p-6">
               <div className="flex items-center gap-2">
                 {Array.from({ length: tt.rating }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}

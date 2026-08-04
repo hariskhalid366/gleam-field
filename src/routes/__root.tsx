@@ -108,7 +108,8 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      {/* Browser extensions can inject attributes before React hydrates. */}
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

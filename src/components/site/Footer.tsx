@@ -72,7 +72,7 @@ export function Footer() {
           <p>© {new Date().getFullYear()} ServicePro, Inc. All rights reserved.</p>
           <p> Made with ❤️ by the ServicePro team </p>
           <div className="flex gap-4">
-            <span>{data?.data.privacyNotice || "Privacy Policy"}</span>
+            <span>{data?.data?.privacyNotice || "Privacy Policy"}</span>
             <a href="#">Terms of Service</a>
             <a href="#">Cookies</a>
           </div>

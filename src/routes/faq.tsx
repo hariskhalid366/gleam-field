@@ -18,7 +18,7 @@ export const Route = createFileRoute("/faq")({
 
 function FAQPage() {
   const { data, isError } = useQuery({ queryKey: ["public-faqs"], enabled: apiConfigured, staleTime: 60_000, queryFn: api.content.publicSite });
-  const items = data?.data.faqs ?? (apiConfigured ? [] : faqs);
+  const items = data?.data?.faqs ?? (apiConfigured ? [] : faqs);
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <p className="eyebrow">FAQ</p>
