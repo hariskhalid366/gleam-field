@@ -1,5 +1,4 @@
 import winston from "winston";
-import "winston-daily-rotate-file";
 import { env } from "./env.js";
 
 const { combine, timestamp, printf, colorize, errors, json } = winston.format;
@@ -20,28 +19,9 @@ export const logger = winston.createLogger({
   level: env.LOG_LEVEL,
   defaultMeta: { service: "servicepro-api", env: env.NODE_ENV },
   format: env.isProd ? prodFormat : devFormat,
-  transports: [
-    new winston.transports.Console(),
-    ...(env.isProd
-      ? [
-          new winston.transports.DailyRotateFile({
-            dirname: "logs",
-            filename: "app-%DATE%.log",
-            datePattern: "YYYY-MM-DD",
-            maxFiles: "14d",
-            zippedArchive: true,
-          }),
-          new winston.transports.DailyRotateFile({
-            dirname: "logs",
-            filename: "error-%DATE%.log",
-            level: "error",
-            datePattern: "YYYY-MM-DD",
-            maxFiles: "30d",
-            zippedArchive: true,
-          }),
-        ]
-      : []),
-  ],
+  // Container platforms capture stdout/stderr. Avoid filesystem transports:
+  // their ephemeral directories may be read-only and must never block startup.
+  transports: [new winston.transports.Console()],
   exitOnError: false,
 });
 
