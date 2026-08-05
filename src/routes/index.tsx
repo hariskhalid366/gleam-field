@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -16,11 +16,6 @@ import { api, apiConfigured, type ApiTechnician, type PublicSiteContent } from "
 import { toDisplayService } from "@/lib/service-display";
 
 export const Route = createFileRoute("/")({
-  // The application opens in the admin workspace. The /admin route validates
-  // any stored session and redirects visitors without admin access to login.
-  beforeLoad: () => {
-    throw redirect({ to: "/admin", replace: true });
-  },
   head: () => ({
     meta: [
       { title: "ServicePro — Reliable Home Services, Delivered by Verified Pros" },
