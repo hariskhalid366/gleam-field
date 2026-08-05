@@ -26,18 +26,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: website/package-lock.json
 
       - name: Install dependencies
+        working-directory: website
         run: npm install
 
       - name: Build GitHub Pages site
+        working-directory: website
         env:
           NITRO_PRESET: github-pages
           VITE_API_BASE_URL: https://gleam-field-production.up.railway.app/api/v1
         run: npm run build
 
       - name: Add SPA fallback
-        run: cp dist/client/index.html dist/client/404.html
+        run: cp website/dist/client/index.html website/dist/client/404.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -45,7 +48,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/client
+          path: website/dist/client
 
   deploy:
     environment:

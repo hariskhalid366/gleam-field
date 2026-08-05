@@ -1,8 +1,12 @@
-# Welcome to your Lovable project
+# ServicePro
 
-This project was built with [Lovable](https://lovable.dev).
+ServicePro is organized as three independently deployable applications:
 
-## Build with Lovable
+- `website/` — TanStack Start web frontend
+- `backend/` — Express and MongoDB API
+- `mobile/` — React Native mobile application
+
+## Website development
 
 Open your project in the [Lovable editor](https://lovable.dev) and keep building.
 
@@ -16,12 +20,15 @@ Prefer working locally? You need Node.js and npm — [install with nvm](https://
 
 ```sh
 git clone <this-repository-url>
-cd <repository-name>
+cd <repository-name>/website
 npm i
 npm run dev
 ```
 
-## Built with
+For Railway, set the frontend service root directory to `website` and the API
+service root directory to `backend`.
+
+## Website stack
 
 - TanStack Start
 - TypeScript
